@@ -1,6 +1,7 @@
 import { requestUrl } from "obsidian";
 import { CITEME_SOURCE_HEADER } from "./utils/constants";
 import { type QuotaInfo, isProStyle } from "./utils/access";
+import { extractQuotaInfo } from "./utils/headers";
 
 export interface Paper {
 	id: string;
@@ -158,43 +159,6 @@ export async function searchCitations(
 			"Failed to connect to CiteMe API. Check your internet connection."
 		);
 	}
-}
-
-function extractQuotaInfo(headers: Record<string, string>): QuotaInfo {
-	return {
-		used: parseNumberHeader(headers, "X-Quota-Used"),
-		limit: parseNumberHeader(headers, "X-Quota-Limit"),
-		remaining: parseNumberHeader(headers, "X-Quota-Remaining"),
-		tier: readHeader(headers, "X-Quota-Tier"),
-	};
-}
-
-function parseNumberHeader(
-	headers: Record<string, string>,
-	name: string
-): number | null {
-	const value = readHeader(headers, name);
-	if (!value) {
-		return null;
-	}
-
-	const parsed = Number(value);
-	return Number.isFinite(parsed) ? parsed : null;
-}
-
-function readHeader(
-	headers: Record<string, string>,
-	name: string
-): string | null {
-	const target = name.toLowerCase();
-
-	for (const [key, value] of Object.entries(headers)) {
-		if (key.toLowerCase() === target) {
-			return value;
-		}
-	}
-
-	return null;
 }
 
 function buildApiError(

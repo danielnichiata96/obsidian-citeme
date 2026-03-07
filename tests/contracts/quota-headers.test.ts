@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { extractQuotaInfo, parseNumberHeader } from "../../src/utils/headers";
 
 /**
  * Contract tests: verify the plugin correctly handles
@@ -10,29 +11,6 @@ import { describe, it, expect } from "vitest";
  * Header names (case-insensitive):
  *   X-Quota-Used, X-Quota-Limit, X-Quota-Remaining, X-Quota-Tier
  */
-
-// Replicate extractQuotaInfo logic for testing without Obsidian deps
-function extractQuotaInfo(headers: Record<string, string>) {
-	const read = (name: string): string | null => {
-		const target = name.toLowerCase();
-		for (const [key, value] of Object.entries(headers)) {
-			if (key.toLowerCase() === target) return value;
-		}
-		return null;
-	};
-	const num = (name: string): number | null => {
-		const v = read(name);
-		if (!v) return null;
-		const n = Number(v);
-		return Number.isFinite(n) ? n : null;
-	};
-	return {
-		used: num("X-Quota-Used"),
-		limit: num("X-Quota-Limit"),
-		remaining: num("X-Quota-Remaining"),
-		tier: read("X-Quota-Tier"),
-	};
-}
 
 describe("Quota header parsing", () => {
 	it("parses standard quota headers", () => {
@@ -93,5 +71,19 @@ describe("Quota header parsing", () => {
 		expect(quota.tier).toBe("pro");
 		expect(quota.used).toBeNull();
 		expect(quota.limit).toBeNull();
+	});
+
+	it("parses '0' as numeric zero, not null", () => {
+		const headers = {
+			"X-Quota-Used": "0",
+			"X-Quota-Remaining": "0",
+		};
+		const quota = extractQuotaInfo(headers);
+		expect(quota.used).toBe(0);
+		expect(quota.remaining).toBe(0);
+	});
+
+	it("parseNumberHeader returns 0 for '0' header value", () => {
+		expect(parseNumberHeader({ "X-Val": "0" }, "X-Val")).toBe(0);
 	});
 });
