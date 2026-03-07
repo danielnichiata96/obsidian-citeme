@@ -11,7 +11,8 @@
 		"format": "prettier --write 'src/**/*.ts' 'main.ts'",
 		"format:check": "prettier --check 'src/**/*.ts' 'main.ts'",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"version": "node scripts/version-bump.mjs"
 	},
 	"keywords": [
 		"obsidian",
