@@ -15,9 +15,17 @@ Search and format academic citations from CiteMe directly in Obsidian, with quot
 
 ## Screenshots
 
-<!-- Screenshot: Search modal showing results for "transformer attention mechanism" with title, authors, year, venue, and citation count -->
-<!-- Screenshot: Settings tab showing citation style dropdown, insert format options, and references heading configuration -->
-<!-- Screenshot: Note with in-text citations and auto-generated References section at the bottom -->
+> **Note:** Screenshots will be added before Community Plugin submission. To capture:
+> 1. Open the plugin in Obsidian
+> 2. Take screenshots of: search modal, settings tab, note with references
+> 3. Save as `docs/screenshots/search-modal.png`, `settings-tab.png`, `references-section.png`
+> 4. Replace this note with the image tags below
+
+<!-- Uncomment when screenshots are ready:
+![Search Modal](docs/screenshots/search-modal.png)
+![Settings](docs/screenshots/settings-tab.png)
+![References](docs/screenshots/references-section.png)
+-->
 
 ## Installation
 
