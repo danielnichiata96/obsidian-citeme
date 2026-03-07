@@ -1,11 +1,14 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type CiteMePlugin from "../main";
 import {
-	CITATION_STYLES,
 	SORT_OPTIONS,
 	INSERT_FORMATS,
 	DEFAULT_SETTINGS,
 } from "./utils/constants";
+import {
+	canUseStyle,
+	getCitationStyleOptions,
+} from "./utils/access";
 
 export interface CiteMeSettings {
 	defaultStyle: string;
@@ -36,15 +39,30 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName("CiteMe").setHeading();
 
 		new Setting(containerEl)
+			.setName("Access")
+			.setDesc(this.plugin.getAccessSummary());
+
+		new Setting(containerEl)
 			.setName("Citation style")
-			.setDesc("Default citation format style")
+			.setDesc(
+				"Default citation format style. Anonymous mode supports 10 styles; Pro styles are marked."
+			)
 			.addDropdown((dropdown) => {
-				for (const [value, label] of Object.entries(CITATION_STYLES)) {
+				for (const [value, label] of getCitationStyleOptions(
+					this.plugin.getAccessTier()
+				)) {
 					dropdown.addOption(value, label);
 				}
 				dropdown.setValue(this.plugin.settings.defaultStyle);
+				let previousValue = this.plugin.settings.defaultStyle;
 				dropdown.onChange(async (value) => {
+					if (!canUseStyle(value, this.plugin.getAccessTier())) {
+						dropdown.setValue(previousValue);
+						this.plugin.showStyleUpgradeNotice(value);
+						return;
+					}
 					this.plugin.settings.defaultStyle = value;
+					previousValue = value;
 					await this.plugin.saveSettings();
 				});
 			});
@@ -121,16 +139,5 @@ export class CiteMeSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl)
-			.setName("API base URL")
-			.setDesc("CiteMe API base URL (for self-hosting)")
-			.addText((text) => {
-				text.setPlaceholder("https://citeme.app")
-					.setValue(this.plugin.settings.apiBaseUrl)
-					.onChange(async (value) => {
-						this.plugin.settings.apiBaseUrl = value;
-						await this.plugin.saveSettings();
-					});
-			});
 	}
 }

@@ -1,20 +1,34 @@
 import { App, Modal, Notice, Setting } from "obsidian";
-import { CitationResult, searchCitations } from "../api";
+import {
+	CitationResult,
+	CiteMeApiError,
+	searchCitations,
+} from "../api";
 import { CiteMeSettings } from "../settings";
+import { canUseStyle, type QuotaInfo } from "../utils/access";
 
 export class CiteMeDoiModal extends Modal {
 	private settings: CiteMeSettings;
 	private onResult: (result: CitationResult) => void;
+	private onQuotaUpdate: (quota: QuotaInfo) => void;
+	private onApiError: (error: unknown) => void;
 	private inputValue = "";
+	private accessTier: string | null;
 
 	constructor(
 		app: App,
 		settings: CiteMeSettings,
-		onResult: (result: CitationResult) => void
+		onResult: (result: CitationResult) => void,
+		onQuotaUpdate: (quota: QuotaInfo) => void,
+		onApiError: (error: unknown) => void,
+		accessTier?: string | null
 	) {
 		super(app);
 		this.settings = settings;
 		this.onResult = onResult;
+		this.onQuotaUpdate = onQuotaUpdate;
+		this.onApiError = onApiError;
+		this.accessTier = accessTier || null;
 	}
 
 	onOpen(): void {
@@ -33,7 +47,6 @@ export class CiteMeDoiModal extends Modal {
 					this.submitDoi();
 				}
 			});
-			// Focus the input
 			setTimeout(() => text.inputEl.focus(), 50);
 		});
 
@@ -51,6 +64,19 @@ export class CiteMeDoiModal extends Modal {
 			return;
 		}
 
+		if (!canUseStyle(this.settings.defaultStyle, this.accessTier)) {
+			this.onApiError(
+				new CiteMeApiError(
+					"style_requires_pro",
+					"This citation style requires CiteMe Pro.",
+					403,
+					null,
+					this.settings.defaultStyle
+				)
+			);
+			return;
+		}
+
 		try {
 			new Notice("Searching...");
 			const response = await searchCitations(
@@ -61,6 +87,7 @@ export class CiteMeDoiModal extends Modal {
 				},
 				this.settings.apiBaseUrl
 			);
+			this.onQuotaUpdate(response.quota);
 
 			if (response.data.citations.length === 0) {
 				new Notice("No results found for this DOI");
@@ -69,10 +96,8 @@ export class CiteMeDoiModal extends Modal {
 
 			this.close();
 			this.onResult(response.data.citations[0]);
-		} catch (err) {
-			const message =
-				err instanceof Error ? err.message : "Unknown error";
-			new Notice(`CiteMe: Search failed - ${message}`);
+		} catch (error) {
+			this.onApiError(error);
 		}
 	}
 

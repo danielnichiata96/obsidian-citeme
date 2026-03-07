@@ -1,15 +1,16 @@
 # CiteMe - Academic Citations for Obsidian
 
-Search and format academic citations from 11+ databases directly in Obsidian. Supports 40+ citation styles including APA, MLA, ABNT, Chicago, IEEE, Harvard, Vancouver, and more.
+Search and format academic citations from CiteMe directly in Obsidian, with quota-aware feedback and clear free/Pro style handling.
 
 ## Features
 
 - **Instant search** - Search millions of academic papers without leaving Obsidian
-- **40+ citation styles** - APA, MLA, ABNT, Chicago, IEEE, Harvard, Vancouver, Nature, Science, and more
+- **Tier-aware citation styles** - Free styles are available immediately and Pro styles are clearly marked
 - **Smart insertion** - Insert in-text citations, full bibliography entries, or both
 - **References management** - Automatically builds and maintains a References section in your notes
 - **Duplicate detection** - Prevents adding the same citation twice (checks by DOI and text)
 - **DOI lookup** - Search directly by DOI for precise results
+- **Quota visibility** - Shows current CiteMe usage in the Obsidian status bar
 - **Mobile compatible** - Works on both desktop and mobile Obsidian
 
 ## Screenshots
@@ -54,6 +55,12 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 | **Narrative** | Narrative citation, e.g., `Vaswani et al. (2017)` |
 | **Both** | In-text at cursor + full citation in References section |
 
+### Access Tiers
+
+- **Anonymous / Free**: 20 citations per month and 10 citation styles
+- **Pro styles**: Marked as `(Pro)` in settings and require CiteMe Pro
+- **Quota reached**: The plugin shows an actionable notice linking to CiteMe
+
 ### DOI Lookup
 
 Use "CiteMe: Search by DOI" from the command palette to find a paper by its DOI. This opens a detail view with all formatted citation variants before inserting.
@@ -75,15 +82,18 @@ When enabled (default), the plugin automatically:
 | Sort by | Relevance | Result sorting order |
 | Add to References | On | Auto-append to References section |
 | References heading | `## References` | Heading text for the references section |
-| API base URL | `https://citeme.app` | API endpoint (for self-hosting) |
 
 ## Supported Citation Styles
 
-APA (7th/6th), MLA (9th/8th), ABNT, ABNT (Numeric), Chicago (Author-Date, Note, Full Note), IEEE, Harvard, Elsevier Harvard, SAGE Harvard, Vancouver, AMA, ACS, ACM, Nature, Science, Cell, OSCOLA, Turabian, ASA, Bluebook, DIN 1505, AIST, MHRA, ISO 690, GOST, CSE, APSA, Annual Reviews, Springer, Taylor & Francis, RSC, AIP, APS, Copernicus, Unified Linguistics, and more
+Free styles: APA, MLA, ABNT, Chicago (Author-Date), Chicago (Note), IEEE, Harvard, Vancouver, AMA, ACS
+
+Pro styles (33 additional): ABNT Numeric, Turabian, ASA, Bluebook, CSE, OSCOLA, MHRA, BMJ, Elsevier Harvard, SAGE Harvard, Taylor & Francis, Cambridge UP, Royal Society, DIN 1505, ISO 690 (German/French/Spanish/International), Nature, PLOS, Science, Cell, The Lancet, AIP, RSC, APSA, AAA, NP 405, Harvard (UCT/AGPS), AGLC4, Vancouver (Author-Date), McGill Guide
+
+Pro styles are marked with `(Pro)` in the settings dropdown and require a [CiteMe Pro](https://citeme.app/pricing) subscription.
 
 ## Network & Privacy Disclosure
 
-This plugin connects to the CiteMe API (https://citeme.app) to search academic databases and format citations. No account is required. No personal data is collected. See CiteMe's privacy policy at https://citeme.app/privacy.
+This plugin connects to the CiteMe API (https://citeme.app) to search academic databases and format citations. Requests are tagged with `X-Source: obsidian-plugin` for channel attribution. Anonymous access is available without an account. See CiteMe's privacy policy at https://citeme.app/privacy.
 
 ## Development
 

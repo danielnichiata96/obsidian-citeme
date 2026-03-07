@@ -1,5 +1,5 @@
 import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
-import { CitationResult } from "./src/api";
+import { CitationResult, CiteMeApiError } from "./src/api";
 import { CiteMeSearchModal } from "./src/modals/search-modal";
 import { CiteMeDoiModal } from "./src/modals/doi-modal";
 import { CiteMeResultModal } from "./src/modals/result-modal";
@@ -8,13 +8,33 @@ import {
 	CiteMeSettingTab,
 	getDefaultSettings,
 } from "./src/settings";
+import {
+	CITEME_APP_URL,
+	CITEME_PRICING_URL,
+	CITATION_STYLES,
+} from "./src/utils/constants";
+import {
+	canUseStyle,
+	formatAccessSummary,
+	formatQuotaLabel,
+	getUsedQuota,
+	type QuotaInfo,
+	normalizeTier,
+} from "./src/utils/access";
 import { insertCitation, InsertFormat } from "./src/utils/formatter";
 
 export default class CiteMePlugin extends Plugin {
 	settings: CiteMeSettings = getDefaultSettings();
+	private statusBarEl: HTMLElement | null = null;
+	private quotaInfo: QuotaInfo | null = null;
+	private actionNotice: Notice | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+		await this.ensureAccessibleDefaultStyle();
+
+		this.statusBarEl = this.addStatusBarItem();
+		this.updateStatusBar();
 
 		this.addCommand({
 			id: "search-citations",
@@ -102,8 +122,11 @@ export default class CiteMePlugin extends Plugin {
 					modal.getFormatOverride() || this.settings.insertFormat;
 				this.handleCitationChoice(editor, result, format);
 			},
+			(quota) => this.updateQuotaInfo(quota),
+			(error) => this.handleApiError(error),
 			initialQuery,
-			formatOverride
+			formatOverride,
+			this.getAccessTier()
 		);
 		modal.open();
 	}
@@ -120,7 +143,10 @@ export default class CiteMePlugin extends Plugin {
 						this.settings.insertFormat
 					);
 				}).open();
-			}
+			},
+			(quota) => this.updateQuotaInfo(quota),
+			(error) => this.handleApiError(error),
+			this.getAccessTier()
 		).open();
 	}
 
@@ -148,5 +174,137 @@ export default class CiteMePlugin extends Plugin {
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
+	}
+
+	getAccessTier(): string {
+		return normalizeTier(this.quotaInfo?.tier);
+	}
+
+	getAccessSummary(): string {
+		return formatAccessSummary(this.quotaInfo);
+	}
+
+	showStyleUpgradeNotice(style: string): void {
+		const styleLabel = CITATION_STYLES[style] || style;
+		this.showActionNotice(
+			`"${styleLabel}" requires CiteMe Pro.`,
+			"Upgrade at citeme.app/pricing",
+			CITEME_PRICING_URL,
+			8000
+		);
+	}
+
+	private async ensureAccessibleDefaultStyle(): Promise<void> {
+		if (canUseStyle(this.settings.defaultStyle, this.getAccessTier())) {
+			return;
+		}
+
+		this.settings.defaultStyle = getDefaultSettings().defaultStyle;
+		await this.saveSettings();
+	}
+
+	private updateQuotaInfo(quota: QuotaInfo): void {
+		const previousRemaining = this.quotaInfo?.remaining ?? null;
+		this.quotaInfo = {
+			used: quota.used ?? this.quotaInfo?.used ?? null,
+			limit: quota.limit ?? this.quotaInfo?.limit ?? null,
+			remaining: quota.remaining ?? this.quotaInfo?.remaining ?? null,
+			tier: quota.tier ?? this.quotaInfo?.tier ?? null,
+		};
+		this.updateStatusBar();
+
+		if (
+			this.quotaInfo.remaining === 0 &&
+			previousRemaining !== 0
+		) {
+			this.showQuotaExceededNotice();
+		}
+	}
+
+	private updateStatusBar(): void {
+		if (!this.statusBarEl) {
+			return;
+		}
+
+		this.statusBarEl.setText(formatQuotaLabel(this.quotaInfo));
+		this.statusBarEl.setAttribute(
+			"aria-label",
+			this.getAccessSummary()
+		);
+		this.statusBarEl.title = this.getAccessSummary();
+	}
+
+	private handleApiError(error: unknown): void {
+		if (error instanceof CiteMeApiError) {
+			if (error.quota) {
+				this.updateQuotaInfo(error.quota);
+			}
+
+			if (error.code === "quota_exceeded") {
+				this.showQuotaExceededNotice();
+				return;
+			}
+
+			if (
+				error.code === "style_requires_pro" &&
+				error.style
+			) {
+				this.showStyleUpgradeNotice(error.style);
+				return;
+			}
+
+			new Notice(`CiteMe: ${error.message}`);
+			return;
+		}
+
+		const message =
+			error instanceof Error ? error.message : "Unknown error";
+		new Notice(`CiteMe: Search failed - ${message}`);
+	}
+
+	private showQuotaExceededNotice(): void {
+		const used = getUsedQuota(this.quotaInfo);
+		const limit = this.quotaInfo?.limit;
+		const usage =
+			used !== null && limit !== null
+				? `You used ${used}/${limit} citations this month.`
+				: "Monthly citation limit reached.";
+
+		this.showActionNotice(
+			`${usage} Sign up free for more citations.`,
+			"Open citeme.app",
+			CITEME_APP_URL
+		);
+	}
+
+	private showActionNotice(
+		message: string,
+		linkLabel: string,
+		href: string,
+		duration = 0
+	): void {
+		this.actionNotice?.hide();
+		this.actionNotice = new Notice(
+			this.buildNoticeFragment(message, linkLabel, href),
+			duration
+		);
+	}
+
+	private buildNoticeFragment(
+		message: string,
+		linkLabel: string,
+		href: string
+	): DocumentFragment {
+		const fragment = document.createDocumentFragment();
+		fragment.append(`${message} `);
+
+		const link = document.createElement("a");
+		link.href = href;
+		link.target = "_blank";
+		link.rel = "noopener noreferrer";
+		link.textContent = linkLabel;
+		fragment.appendChild(link);
+
+		return fragment;
 	}
 }

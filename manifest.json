@@ -3,7 +3,7 @@
 	"name": "CiteMe - Academic Citations",
 	"version": "1.0.0",
 	"minAppVersion": "1.4.0",
-	"description": "Search and insert formatted academic citations from 11+ databases. Supports APA, MLA, ABNT, Chicago, IEEE, and 40+ citation styles.",
+	"description": "Search and insert formatted academic citations from 11+ databases. 43 citation styles with quota-aware feedback and free/Pro support.",
 	"author": "CiteMe",
 	"authorUrl": "https://citeme.app",
 	"fundingUrl": "https://citeme.app/pricing",

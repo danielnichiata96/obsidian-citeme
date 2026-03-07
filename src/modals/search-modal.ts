@@ -1,29 +1,46 @@
-import { App, Notice, SuggestModal } from "obsidian";
-import { CitationResult, searchCitations } from "../api";
+import { App, SuggestModal } from "obsidian";
+import {
+	CitationResult,
+	CiteMeApiError,
+	searchCitations,
+} from "../api";
 import { CiteMeSettings } from "../settings";
+import { canUseStyle, type QuotaInfo } from "../utils/access";
 import { InsertFormat } from "../utils/formatter";
 
 export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	private settings: CiteMeSettings;
 	private onChoose: (result: CitationResult) => void;
+	private onQuotaUpdate: (quota: QuotaInfo) => void;
+	private onApiError: (error: unknown) => void;
 	private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	private lastResults: CitationResult[] = [];
+	private pendingResolve:
+		| ((results: CitationResult[]) => void)
+		| null = null;
 	private initialQuery: string;
 	private formatOverride: InsertFormat | null;
+	private accessTier: string | null;
 	private currentRequestId = 0;
 
 	constructor(
 		app: App,
 		settings: CiteMeSettings,
 		onChoose: (result: CitationResult) => void,
+		onQuotaUpdate: (quota: QuotaInfo) => void,
+		onApiError: (error: unknown) => void,
 		initialQuery?: string,
-		formatOverride?: InsertFormat
+		formatOverride?: InsertFormat,
+		accessTier?: string | null
 	) {
 		super(app);
 		this.settings = settings;
 		this.onChoose = onChoose;
+		this.onQuotaUpdate = onQuotaUpdate;
+		this.onApiError = onApiError;
 		this.initialQuery = initialQuery || "";
 		this.formatOverride = formatOverride || null;
+		this.accessTier = accessTier || null;
 
 		this.setPlaceholder("Search academic citations...");
 		this.setInstructions([
@@ -46,6 +63,30 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 		query: string
 	): CitationResult[] | Promise<CitationResult[]> {
 		if (!query || query.length < 3) {
+			this.currentRequestId++;
+			if (this.debounceTimer) {
+				clearTimeout(this.debounceTimer);
+				this.debounceTimer = null;
+			}
+			if (this.pendingResolve) {
+				this.pendingResolve([]);
+				this.pendingResolve = null;
+			}
+			this.lastResults = [];
+			return [];
+		}
+
+		const style = this.settings.defaultStyle;
+		if (!canUseStyle(style, this.accessTier)) {
+			this.onApiError(
+				new CiteMeApiError(
+					"style_requires_pro",
+					"This citation style requires CiteMe Pro.",
+					403,
+					null,
+					style
+				)
+			);
 			this.lastResults = [];
 			return [];
 		}
@@ -54,38 +95,44 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 			if (this.debounceTimer) {
 				clearTimeout(this.debounceTimer);
 			}
+			if (this.pendingResolve) {
+				this.pendingResolve([]);
+				this.pendingResolve = null;
+			}
+
+			const requestId = ++this.currentRequestId;
+			this.pendingResolve = resolve;
 
 			this.debounceTimer = setTimeout(async () => {
-				// Tag this request so we can discard stale responses
-				const requestId = ++this.currentRequestId;
-
 				try {
 					const response = await searchCitations(
 						{
 							query,
-							style: this.settings.defaultStyle,
+							style,
 							limit: this.settings.defaultLimit,
 							sortBy: this.settings.sortBy,
 						},
 						this.settings.apiBaseUrl
 					);
 
-					// Discard if a newer request was fired while this one was in flight
 					if (requestId !== this.currentRequestId) {
+						resolve([]);
 						return;
 					}
 
+					this.onQuotaUpdate(response.quota);
 					this.lastResults = response.data.citations;
+					this.pendingResolve = null;
 					resolve(this.lastResults);
-				} catch (err) {
-					// Discard errors from stale requests
+				} catch (error) {
 					if (requestId !== this.currentRequestId) {
+						resolve([]);
 						return;
 					}
 
-					const message =
-						err instanceof Error ? err.message : "Unknown error";
-					new Notice(`CiteMe: Search failed - ${message}`);
+					this.pendingResolve = null;
+					this.onApiError(error);
+					this.lastResults = [];
 					resolve([]);
 				}
 			}, 300);
@@ -144,6 +191,18 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 
 	getFormatOverride(): InsertFormat | null {
 		return this.formatOverride;
+	}
+
+	onClose(): void {
+		if (this.debounceTimer) {
+			clearTimeout(this.debounceTimer);
+			this.debounceTimer = null;
+		}
+		if (this.pendingResolve) {
+			this.pendingResolve([]);
+			this.pendingResolve = null;
+		}
+		super.onClose();
 	}
 }
 
