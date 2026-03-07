@@ -140,10 +140,7 @@ function buildCiteApiUrl(params: SearchParams, baseUrl: string): URL {
 	try {
 		url = new URL(`${baseUrl}/api/v1/cite`);
 	} catch {
-		throw new CiteMeApiError(
-			"api",
-			`Invalid API base URL: ${baseUrl}`
-		);
+		throw new CiteMeApiError("api", `Invalid API base URL: ${baseUrl}`);
 	}
 
 	url.searchParams.set("q", params.query);

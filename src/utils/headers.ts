@@ -1,8 +1,6 @@
 import type { QuotaInfo } from "./access";
 
-export function extractQuotaInfo(
-	headers: Record<string, string>
-): QuotaInfo {
+export function extractQuotaInfo(headers: Record<string, string>): QuotaInfo {
 	return {
 		used: parseNumberHeader(headers, "X-Quota-Used"),
 		limit: parseNumberHeader(headers, "X-Quota-Limit"),
