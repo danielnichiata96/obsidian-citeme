@@ -9,6 +9,7 @@
 		"strict": true,
 		"moduleResolution": "node",
 		"isolatedModules": true,
+		"skipLibCheck": true,
 		"lib": [
 			"DOM",
 			"ES5",
