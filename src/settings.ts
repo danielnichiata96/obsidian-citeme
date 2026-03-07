@@ -4,6 +4,7 @@ import {
 	SORT_OPTIONS,
 	INSERT_FORMATS,
 	DEFAULT_SETTINGS,
+	CITEME_APP_URL,
 } from "./utils/constants";
 import { canUseStyle, getCitationStyleOptions } from "./utils/access";
 
@@ -36,6 +37,17 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Access")
 			.setDesc(this.plugin.getAccessSummary());
+
+		new Setting(containerEl)
+			.setName("CiteMe account")
+			.setDesc(
+				"Sign in at citeme.app to unlock more citations and Pro styles."
+			)
+			.addButton((btn) => {
+				btn.setButtonText("Open citeme.app").onClick(() => {
+					window.open(CITEME_APP_URL, "_blank");
+				});
+			});
 
 		new Setting(containerEl)
 			.setName("Citation style")
