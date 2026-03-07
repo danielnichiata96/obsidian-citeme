@@ -33,8 +33,6 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl).setName("CiteMe").setHeading();
-
 		new Setting(containerEl)
 			.setName("Access")
 			.setDesc(this.plugin.getAccessSummary());
