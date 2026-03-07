@@ -74,8 +74,7 @@ export default class CiteMePlugin extends Plugin {
 		});
 
 		this.addRibbonIcon("book-open", "CiteMe: Search citations", () => {
-			const view =
-				this.app.workspace.getActiveViewOfType(MarkdownView);
+			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (!view) {
 				new Notice("Open a note to insert citations");
 				return;
@@ -213,10 +212,7 @@ export default class CiteMePlugin extends Plugin {
 		};
 		this.updateStatusBar();
 
-		if (
-			this.quotaInfo.remaining === 0 &&
-			previousRemaining !== 0
-		) {
+		if (this.quotaInfo.remaining === 0 && previousRemaining !== 0) {
 			this.showQuotaExceededNotice();
 		}
 	}
@@ -227,10 +223,7 @@ export default class CiteMePlugin extends Plugin {
 		}
 
 		this.statusBarEl.setText(formatQuotaLabel(this.quotaInfo));
-		this.statusBarEl.setAttribute(
-			"aria-label",
-			this.getAccessSummary()
-		);
+		this.statusBarEl.setAttribute("aria-label", this.getAccessSummary());
 		this.statusBarEl.title = this.getAccessSummary();
 	}
 
@@ -245,10 +238,7 @@ export default class CiteMePlugin extends Plugin {
 				return;
 			}
 
-			if (
-				error.code === "style_requires_pro" &&
-				error.style
-			) {
+			if (error.code === "style_requires_pro" && error.style) {
 				this.showStyleUpgradeNotice(error.style);
 				return;
 			}

@@ -1,9 +1,5 @@
 import { App, Modal, Notice, Setting } from "obsidian";
-import {
-	CitationResult,
-	CiteMeApiError,
-	searchCitations,
-} from "../api";
+import { CitationResult, CiteMeApiError, searchCitations } from "../api";
 import { CiteMeSettings } from "../settings";
 import { canUseStyle, type QuotaInfo } from "../utils/access";
 

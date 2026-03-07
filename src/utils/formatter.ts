@@ -37,11 +37,7 @@ export function insertCitation(
 			break;
 	}
 
-	if (
-		format !== "both" &&
-		addToReferences &&
-		format !== "bibliography"
-	) {
+	if (format !== "both" && addToReferences && format !== "bibliography") {
 		appendToReferencesSection(
 			editor,
 			result.formatted.bibliography,
@@ -86,13 +82,7 @@ function appendToReferencesSection(
 
 		// Check duplicate only within the references section
 		if (
-			isDuplicateEntry(
-				lines,
-				headingIndex,
-				sectionEnd,
-				bibliography,
-				doi
-			)
+			isDuplicateEntry(lines, headingIndex, sectionEnd, bibliography, doi)
 		) {
 			return;
 		}
@@ -247,12 +237,12 @@ function findAlphabeticalInsertionLine(
 	return sectionEnd;
 }
 
-export function findHeadingIndex(
-	lines: string[],
-	heading: string
-): number {
+export function findHeadingIndex(lines: string[], heading: string): number {
 	const normalized = normalizeHeading(heading);
-	const headingText = normalized.replace(/^#+\s*/, "").trim().toLowerCase();
+	const headingText = normalized
+		.replace(/^#+\s*/, "")
+		.trim()
+		.toLowerCase();
 	const headingLevel = (normalized.match(/^#+/) || [""])[0].length;
 
 	for (let i = 0; i < lines.length; i++) {
@@ -270,10 +260,7 @@ export function findHeadingIndex(
 	return -1;
 }
 
-export function findSectionEnd(
-	lines: string[],
-	headingIndex: number
-): number {
+export function findSectionEnd(lines: string[], headingIndex: number): number {
 	const headingLine = lines[headingIndex];
 	const match = headingLine.match(/^#+/);
 	if (!match) return lines.length;

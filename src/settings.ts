@@ -5,10 +5,7 @@ import {
 	INSERT_FORMATS,
 	DEFAULT_SETTINGS,
 } from "./utils/constants";
-import {
-	canUseStyle,
-	getCitationStyleOptions,
-} from "./utils/access";
+import { canUseStyle, getCitationStyleOptions } from "./utils/access";
 
 export interface CiteMeSettings {
 	defaultStyle: string;
@@ -138,6 +135,5 @@ export class CiteMeSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
-
 	}
 }

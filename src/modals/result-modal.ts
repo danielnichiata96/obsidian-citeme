@@ -65,7 +65,11 @@ export class CiteMeResultModal extends Modal {
 			cls: "citeme-detail-citations",
 		});
 
-		createCitationBlock(citationsEl, "Bibliography", formatted.bibliography);
+		createCitationBlock(
+			citationsEl,
+			"Bibliography",
+			formatted.bibliography
+		);
 		createCitationBlock(citationsEl, "In-text", formatted.inText);
 		createCitationBlock(
 			citationsEl,

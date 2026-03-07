@@ -1,9 +1,5 @@
 import { App, SuggestModal } from "obsidian";
-import {
-	CitationResult,
-	CiteMeApiError,
-	searchCitations,
-} from "../api";
+import { CitationResult, CiteMeApiError, searchCitations } from "../api";
 import { CiteMeSettings } from "../settings";
 import { canUseStyle, type QuotaInfo } from "../utils/access";
 import { InsertFormat } from "../utils/formatter";
@@ -15,9 +11,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	private onApiError: (error: unknown) => void;
 	private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 	private lastResults: CitationResult[] = [];
-	private pendingResolve:
-		| ((results: CitationResult[]) => void)
-		| null = null;
+	private pendingResolve: ((results: CitationResult[]) => void) | null = null;
 	private initialQuery: string;
 	private formatOverride: InsertFormat | null;
 	private accessTier: string | null;

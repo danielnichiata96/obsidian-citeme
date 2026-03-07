@@ -1,11 +1,6 @@
 import { requestUrl } from "obsidian";
-import {
-	CITEME_SOURCE_HEADER,
-} from "./utils/constants";
-import {
-	type QuotaInfo,
-	isProStyle,
-} from "./utils/access";
+import { CITEME_SOURCE_HEADER } from "./utils/constants";
+import { type QuotaInfo, isProStyle } from "./utils/access";
 
 export interface Paper {
 	id: string;
