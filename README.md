@@ -15,17 +15,7 @@ Search and format academic citations from CiteMe directly in Obsidian, with quot
 
 ## Screenshots
 
-> **Note:** Screenshots will be added before Community Plugin submission. To capture:
-> 1. Open the plugin in Obsidian
-> 2. Take screenshots of: search modal, settings tab, note with references
-> 3. Save as `docs/screenshots/search-modal.png`, `settings-tab.png`, `references-section.png`
-> 4. Replace this note with the image tags below
-
-<!-- Uncomment when screenshots are ready:
-![Search Modal](docs/screenshots/search-modal.png)
-![Settings](docs/screenshots/settings-tab.png)
-![References](docs/screenshots/references-section.png)
--->
+*Coming soon — screenshots will be added in a future release.*
 
 ## Installation
 
@@ -50,7 +40,7 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 
 ### Search Citations
 
-- **Command palette**: Open command palette (Cmd/Ctrl+P) and type "CiteMe: Search citations"
+- **Command palette**: Open command palette (Cmd/Ctrl+P) and type "Search citations"
 - **Ribbon icon**: Click the book icon in the left sidebar
 - **Right-click menu**: Select text, right-click, and choose "Search citation for selected text"
 
@@ -71,7 +61,7 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 
 ### DOI Lookup
 
-Use "CiteMe: Search by DOI" from the command palette to find a paper by its DOI. This opens a detail view with all formatted citation variants before inserting.
+Use "Search by DOI" from the command palette to find a paper by its DOI. This opens a detail view with all formatted citation variants before inserting.
 
 ### References Section
 
