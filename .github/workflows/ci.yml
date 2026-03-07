@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npx tsc -noEmit
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke check - manifest.json
+        run: |
+          node -e "
+            const m = require('./manifest.json');
+            const v = require('./versions.json');
+            const p = require('./package.json');
+            const assert = require('assert');
+            assert(m.id, 'manifest.id missing');
+            assert(m.version, 'manifest.version missing');
+            assert(m.minAppVersion, 'manifest.minAppVersion missing');
+            assert.strictEqual(m.version, p.version, 'manifest.version != package.json version');
+            assert(v[m.version], 'versions.json missing entry for ' + m.version);
+            assert.strictEqual(v[m.version], m.minAppVersion, 'versions.json minAppVersion mismatch');
+            console.log('Smoke check passed: v' + m.version + ' (minApp: ' + m.minAppVersion + ')');
+          "
+
+      - name: Smoke check - build artifacts
+        run: |
+          test -f main.js || (echo "main.js not found" && exit 1)
+          test -f manifest.json || (echo "manifest.json not found" && exit 1)
+          test -f styles.css || (echo "styles.css not found" && exit 1)
+          echo "All release artifacts present"
