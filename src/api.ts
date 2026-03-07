@@ -79,86 +79,106 @@ export async function searchCitations(
 	params: SearchParams,
 	baseUrl: string
 ): Promise<CiteResponse> {
+	const url = buildCiteApiUrl(params, baseUrl);
+
+	let response;
 	try {
-		const url = new URL(`${baseUrl}/api/v1/cite`);
-		url.searchParams.set("q", params.query);
-
-		if (params.style) {
-			url.searchParams.set("style", params.style);
-		}
-		if (params.limit) {
-			url.searchParams.set("limit", String(params.limit));
-		}
-		if (params.yearMin) {
-			url.searchParams.set("yearMin", String(params.yearMin));
-		}
-		if (params.yearMax) {
-			url.searchParams.set("yearMax", String(params.yearMax));
-		}
-		if (params.sourceType) {
-			url.searchParams.set("sourceType", params.sourceType);
-		}
-		if (params.sortBy) {
-			url.searchParams.set("sortBy", params.sortBy);
-		}
-
-		const response = await requestUrl({
+		response = await requestUrl({
 			url: url.toString(),
 			headers: {
 				"X-Source": CITEME_SOURCE_HEADER,
 			},
 			throw: false,
 		});
-
-		const quota = extractQuotaInfo(response.headers);
-		if (response.status >= 400) {
-			throw buildApiError(
-				response.status,
-				response.text,
-				quota,
-				params.style
-			);
-		}
-
-		const json = response.json;
-		if (
-			!json ||
-			typeof json !== "object" ||
-			!("success" in json) ||
-			!("data" in json)
-		) {
-			throw new CiteMeApiError(
-				"api",
-				"Unexpected API response format",
-				response.status,
-				quota,
-				params.style ?? null
-			);
-		}
-
-		if (!json.success) {
-			throw buildApiError(
-				response.status,
-				response.text,
-				quota,
-				params.style
-			);
-		}
-
-		return {
-			...(json as Omit<CiteResponse, "quota">),
-			quota,
-		};
 	} catch (error) {
-		if (error instanceof CiteMeApiError) {
-			throw error;
-		}
+		throw buildRequestError(error);
+	}
 
-		throw new CiteMeApiError(
-			"network",
-			"Failed to connect to CiteMe API. Check your internet connection."
+	const quota = extractQuotaInfo(response.headers);
+	if (response.status >= 400) {
+		throw buildApiError(
+			response.status,
+			response.text,
+			quota,
+			params.style
 		);
 	}
+
+	const json = response.json;
+	if (
+		!json ||
+		typeof json !== "object" ||
+		!("success" in json) ||
+		!("data" in json)
+	) {
+		throw new CiteMeApiError(
+			"api",
+			"Unexpected API response format",
+			response.status,
+			quota,
+			params.style ?? null
+		);
+	}
+
+	if (!json.success) {
+		throw buildApiError(
+			response.status,
+			response.text,
+			quota,
+			params.style
+		);
+	}
+
+	return {
+		...(json as Omit<CiteResponse, "quota">),
+		quota,
+	};
+}
+
+function buildCiteApiUrl(params: SearchParams, baseUrl: string): URL {
+	let url: URL;
+	try {
+		url = new URL(`${baseUrl}/api/v1/cite`);
+	} catch {
+		throw new CiteMeApiError(
+			"api",
+			`Invalid API base URL: ${baseUrl}`
+		);
+	}
+
+	url.searchParams.set("q", params.query);
+
+	if (params.style) {
+		url.searchParams.set("style", params.style);
+	}
+	if (params.limit) {
+		url.searchParams.set("limit", String(params.limit));
+	}
+	if (params.yearMin) {
+		url.searchParams.set("yearMin", String(params.yearMin));
+	}
+	if (params.yearMax) {
+		url.searchParams.set("yearMax", String(params.yearMax));
+	}
+	if (params.sourceType) {
+		url.searchParams.set("sourceType", params.sourceType);
+	}
+	if (params.sortBy) {
+		url.searchParams.set("sortBy", params.sortBy);
+	}
+
+	return url;
+}
+
+function buildRequestError(error: unknown): CiteMeApiError {
+	if (error instanceof CiteMeApiError) {
+		return error;
+	}
+
+	return new CiteMeApiError(
+		"network",
+		"Failed to connect to CiteMe API. Check your internet connection."
+	);
 }
 
 function buildApiError(

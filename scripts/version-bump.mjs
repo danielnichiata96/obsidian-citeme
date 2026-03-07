@@ -1,7 +1,15 @@
 import { readFileSync, writeFileSync } from "fs";
 
-const targetVersion = process.argv[2];
+const pkg = JSON.parse(readFileSync("package.json", "utf8"));
+const targetVersion = process.argv[2] ?? pkg.version;
+const isNpmVersionLifecycle = process.env.npm_lifecycle_event === "version";
+
 if (!targetVersion) {
+	console.error("Usage: node scripts/version-bump.mjs <version>");
+	process.exit(1);
+}
+
+if (!process.argv[2] && !isNpmVersionLifecycle) {
 	console.error("Usage: node scripts/version-bump.mjs <version>");
 	process.exit(1);
 }
@@ -13,7 +21,6 @@ if (!/^\d+\.\d+\.\d+$/.test(targetVersion)) {
 }
 
 // Update package.json
-const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 pkg.version = targetVersion;
 writeFileSync("package.json", JSON.stringify(pkg, null, "\t") + "\n");
 

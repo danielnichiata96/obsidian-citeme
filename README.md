@@ -84,6 +84,7 @@ When enabled (default), the plugin automatically:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
+| CiteMe account | Link | Opens citeme.app to sign in or upgrade |
 | Citation style | APA | Default citation format |
 | Results limit | 5 | Number of search results (1-20) |
 | Insert format | Bibliography | How citations are inserted |
@@ -109,6 +110,7 @@ This plugin connects to the CiteMe API (https://citeme.app) to search academic d
 git clone https://github.com/danielnichiata96/obsidian-citeme.git
 cd obsidian-citeme
 npm install
+npm run sync:saas-contract # Optional: refresh SaaS parity snapshot when ../citeme exists
 npm run dev   # Watch mode (rebuilds on file change)
 npm run build # Production build
 ```

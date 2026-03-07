@@ -1,18 +1,37 @@
 import { describe, it, expect } from "vitest";
 import { extractQuotaInfo, parseNumberHeader } from "../../src/utils/headers";
+import {
+	hasLiveSaasContract,
+	loadLiveSaasContract,
+	loadSaasContract,
+	loadSnapshotSaasContract,
+} from "./saas-contract-source";
 
 /**
- * Contract tests: verify the plugin correctly handles
- * the CiteMe API quota header format.
+ * SaaS parity tests for quota headers.
  *
- * These headers are set by the SaaS at:
- *   citeme/app/api/v1/cite/route.ts
- *
- * Header names (case-insensitive):
- *   X-Quota-Used, X-Quota-Limit, X-Quota-Remaining, X-Quota-Tier
+ * Live SaaS source is used when the sibling repo exists; otherwise the
+ * checked-in snapshot is used.
  */
 
+const saasContract = loadSaasContract();
+
 describe("Quota header parsing", () => {
+	if (hasLiveSaasContract()) {
+		it("checked-in snapshot matches the live SaaS quota headers", () => {
+			expect(loadSnapshotSaasContract()).toEqual(loadLiveSaasContract());
+		});
+	}
+
+	it("the plugin tracks the canonical quota headers exposed by the SaaS", () => {
+		expect(saasContract.quotaHeaders).toEqual([
+			"X-Quota-Limit",
+			"X-Quota-Remaining",
+			"X-Quota-Tier",
+			"X-Quota-Used",
+		]);
+	});
+
 	it("parses standard quota headers", () => {
 		const headers = {
 			"X-Quota-Used": "5",
