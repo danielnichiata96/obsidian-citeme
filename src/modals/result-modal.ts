@@ -59,7 +59,7 @@ export class CiteMeResultModal extends Modal {
 			});
 		}
 
-		contentEl.createEl("h3", { text: "Formatted Citations" });
+		contentEl.createEl("h3", { text: "Formatted citations" });
 
 		const citationsEl = contentEl.createDiv({
 			cls: "citeme-detail-citations",

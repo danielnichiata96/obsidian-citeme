@@ -40,7 +40,7 @@ export class CiteMeDoiModal extends Modal {
 			text.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
 				if (e.key === "Enter") {
 					e.preventDefault();
-					this.submitDoi();
+					void this.submitDoi();
 				}
 			});
 			setTimeout(() => text.inputEl.focus(), 50);
@@ -49,7 +49,7 @@ export class CiteMeDoiModal extends Modal {
 		new Setting(contentEl).addButton((btn) => {
 			btn.setButtonText("Search")
 				.setCta()
-				.onClick(() => this.submitDoi());
+				.onClick(() => { void this.submitDoi(); });
 		});
 	}
 

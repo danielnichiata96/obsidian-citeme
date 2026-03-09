@@ -41,7 +41,7 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("CiteMe account")
 			.setDesc(
-				"Sign in at citeme.app to unlock more citations and Pro styles."
+				"Sign in at citeme.app to unlock more citations and pro styles."
 			)
 			.addButton((btn) => {
 				btn.setButtonText("Open citeme.app").onClick(() => {
@@ -52,7 +52,7 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Citation style")
 			.setDesc(
-				"Default citation format style. Anonymous mode supports 10 styles; Pro styles are marked."
+				"Default citation format style. Anonymous mode supports 10 styles; pro styles are marked."
 			)
 			.addDropdown((dropdown) => {
 				for (const [value, label] of getCitationStyleOptions(
@@ -119,9 +119,9 @@ export class CiteMeSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
-			.setName("Add to References section")
+			.setName("Add to references section")
 			.setDesc(
-				"Automatically append full citation to a References section"
+				"Automatically append full citation to a references section"
 			)
 			.addToggle((toggle) => {
 				toggle
@@ -135,7 +135,7 @@ export class CiteMeSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("References heading")
 			.setDesc(
-				"Markdown heading for the references section (e.g. ## References)"
+				"Heading used for the references section (e.g. ## References)"
 			)
 			.addText((text) => {
 				text.setPlaceholder("## References")

@@ -97,38 +97,40 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 			const requestId = ++this.currentRequestId;
 			this.pendingResolve = resolve;
 
-			this.debounceTimer = setTimeout(async () => {
-				try {
-					const response = await searchCitations(
-						{
-							query,
-							style,
-							limit: this.settings.defaultLimit,
-							sortBy: this.settings.sortBy,
-						},
-						this.settings.apiBaseUrl
-					);
+			this.debounceTimer = setTimeout(() => {
+				void (async () => {
+					try {
+						const response = await searchCitations(
+							{
+								query,
+								style,
+								limit: this.settings.defaultLimit,
+								sortBy: this.settings.sortBy,
+							},
+							this.settings.apiBaseUrl
+						);
 
-					if (requestId !== this.currentRequestId) {
+						if (requestId !== this.currentRequestId) {
+							resolve([]);
+							return;
+						}
+
+						this.onQuotaUpdate(response.quota);
+						this.lastResults = response.data.citations;
+						this.pendingResolve = null;
+						resolve(this.lastResults);
+					} catch (error) {
+						if (requestId !== this.currentRequestId) {
+							resolve([]);
+							return;
+						}
+
+						this.pendingResolve = null;
+						this.onApiError(error);
+						this.lastResults = [];
 						resolve([]);
-						return;
 					}
-
-					this.onQuotaUpdate(response.quota);
-					this.lastResults = response.data.citations;
-					this.pendingResolve = null;
-					resolve(this.lastResults);
-				} catch (error) {
-					if (requestId !== this.currentRequestId) {
-						resolve([]);
-						return;
-					}
-
-					this.pendingResolve = null;
-					this.onApiError(error);
-					this.lastResults = [];
-					resolve([]);
-				}
+				})();
 			}, 300);
 		});
 	}
