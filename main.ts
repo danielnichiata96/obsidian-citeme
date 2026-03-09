@@ -73,7 +73,7 @@ export default class CiteMePlugin extends Plugin {
 			},
 		});
 
-		this.addRibbonIcon("book-open", "CiteMe: Search citations", () => {
+		this.addRibbonIcon("book-open", "CiteMe: search citations", () => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (!view) {
 				new Notice("Open a note to insert citations");
@@ -96,7 +96,7 @@ export default class CiteMePlugin extends Plugin {
 				}
 
 				menu.addItem((item) => {
-					item.setTitle("CiteMe: Search citations")
+					item.setTitle("CiteMe: search citations")
 						.setIcon("book-open")
 						.onClick(() => {
 							this.openSearchModal(editor);

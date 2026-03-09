@@ -45,7 +45,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	}
 
 	onOpen(): void {
-		super.onOpen();
+		void super.onOpen();
 		if (this.initialQuery) {
 			const inputEl = this.inputEl;
 			inputEl.value = this.initialQuery;
