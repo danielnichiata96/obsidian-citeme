@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-citeme",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Search and insert formatted academic citations in Obsidian",
 	"main": "main.js",
 	"scripts": {
