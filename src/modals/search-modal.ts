@@ -1,8 +1,9 @@
 import { App, SuggestModal } from "obsidian";
-import { CitationResult, CiteMeApiError, searchCitations } from "../api";
-import { CiteMeSettings } from "../settings";
-import { canUseStyle, type QuotaInfo } from "../utils/access";
-import { InsertFormat } from "../utils/formatter";
+import { CitationResult, searchCitations } from "../api";
+import type { QuotaInfo } from "../utils/access";
+import { formatAuthorList } from "../utils/citation-result";
+import { SEARCH_DEBOUNCE_MS } from "../utils/constants";
+import type { CiteMeSettings, InsertFormat } from "../utils/settings-migration";
 
 export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	private settings: CiteMeSettings;
@@ -14,7 +15,6 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	private pendingResolve: ((results: CitationResult[]) => void) | null = null;
 	private initialQuery: string;
 	private formatOverride: InsertFormat | null;
-	private accessTier: string | null;
 	private currentRequestId = 0;
 
 	constructor(
@@ -24,8 +24,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 		onQuotaUpdate: (quota: QuotaInfo) => void,
 		onApiError: (error: unknown) => void,
 		initialQuery?: string,
-		formatOverride?: InsertFormat,
-		accessTier?: string | null
+		formatOverride?: InsertFormat
 	) {
 		super(app);
 		this.settings = settings;
@@ -34,7 +33,6 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 		this.onApiError = onApiError;
 		this.initialQuery = initialQuery || "";
 		this.formatOverride = formatOverride || null;
-		this.accessTier = accessTier || null;
 
 		this.setPlaceholder("Search academic citations...");
 		this.setInstructions([
@@ -71,19 +69,6 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 		}
 
 		const style = this.settings.defaultStyle;
-		if (!canUseStyle(style, this.accessTier)) {
-			this.onApiError(
-				new CiteMeApiError(
-					"style_requires_pro",
-					"This citation style requires CiteMe Pro.",
-					403,
-					null,
-					style
-				)
-			);
-			this.lastResults = [];
-			return [];
-		}
 
 		return new Promise((resolve) => {
 			if (this.debounceTimer) {
@@ -116,7 +101,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 						}
 
 						this.onQuotaUpdate(response.quota);
-						this.lastResults = response.data.citations;
+						this.lastResults = response.citations;
 						this.pendingResolve = null;
 						resolve(this.lastResults);
 					} catch (error) {
@@ -131,7 +116,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 						resolve([]);
 					}
 				})();
-			}, 300);
+			}, SEARCH_DEBOUNCE_MS);
 		});
 	}
 
@@ -145,11 +130,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 
 		const parts: string[] = [];
 		if (result.paper.authors.length > 0) {
-			const authors =
-				result.paper.authors.length > 3
-					? `${result.paper.authors[0]} et al.`
-					: result.paper.authors.join(", ");
-			parts.push(authors);
+			parts.push(formatAuthorList(result.paper.authors));
 		}
 		if (result.paper.year) {
 			parts.push(String(result.paper.year));

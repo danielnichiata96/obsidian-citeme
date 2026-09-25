@@ -1,10 +1,15 @@
-import { CITATION_STYLES, FREE_TIER_STYLES } from "./constants";
+import { CITATION_STYLES } from "./constants";
 
 export interface QuotaInfo {
 	used: number | null;
 	limit: number | null;
 	remaining: number | null;
 	tier: string | null;
+	/**
+	 * `day` = the anonymous rolling 24h budget GET /cite reports;
+	 * `month` = a signed-in plan quota; `null` = unknown yet.
+	 */
+	window: "day" | "month" | null;
 }
 
 export function normalizeTier(tier?: string | null): string {
@@ -12,34 +17,14 @@ export function normalizeTier(tier?: string | null): string {
 	return value || "anonymous";
 }
 
-export function canUseStyle(style: string, tier?: string | null): boolean {
-	if (!style) {
-		return true;
-	}
-
-	return normalizeTier(tier) === "pro"
-		? true
-		: (FREE_TIER_STYLES as readonly string[]).includes(style);
-}
-
-export function isProStyle(style: string): boolean {
-	return !(FREE_TIER_STYLES as readonly string[]).includes(style);
-}
-
-export function getCitationStyleLabel(
-	style: string,
-	tier?: string | null
-): string {
-	const label = CITATION_STYLES[style] || style;
-	return canUseStyle(style, tier) ? label : `${label} (Pro)`;
-}
-
-export function getCitationStyleOptions(
-	tier?: string | null
-): Array<[string, string]> {
+/**
+ * Dropdown options for every curated style. The API formats all of them for
+ * anonymous callers, so none is locked here.
+ */
+export function getCitationStyleOptions(): Array<[string, string]> {
 	return Object.keys(CITATION_STYLES).map((style) => [
 		style,
-		getCitationStyleLabel(style, tier),
+		CITATION_STYLES[style],
 	]);
 }
 
@@ -69,7 +54,9 @@ export function formatQuotaLabel(quota?: QuotaInfo | null): string {
 	}
 
 	if (used !== null && limit !== null) {
-		return `CiteMe: ${used}/${limit} citations`;
+		return quota?.window === "day"
+			? `CiteMe: ${used}/${limit} searches (24h)`
+			: `CiteMe: ${used}/${limit} citations this month`;
 	}
 
 	if (quota?.remaining === 0) {
@@ -84,29 +71,15 @@ export function formatQuotaLabel(quota?: QuotaInfo | null): string {
 }
 
 export function formatAccessSummary(quota?: QuotaInfo | null): string {
-	const tier = normalizeTier(quota?.tier);
+	const styles = `All ${Object.keys(CITATION_STYLES).length} citation styles are available.`;
 	const used = getUsedQuota(quota);
 	const limit = quota?.limit ?? null;
 
-	if (tier === "pro") {
-		return "CiteMe Pro unlocked. All citation styles are available.";
-	}
-
 	if (used !== null && limit !== null) {
-		return `Tier: ${capitalizeTier(tier)}. Usage: ${used}/${limit} citations this month.`;
+		return quota?.window === "day"
+			? `No account needed. ${used}/${limit} searches in the last 24 hours on this network. ${styles}`
+			: `${used}/${limit} citations this month. ${styles}`;
 	}
 
-	if (tier === "free") {
-		return "Tier: Free. 10 citation styles are currently available.";
-	}
-
-	return "Tier: Anonymous. 20 citations/month and 10 citation styles are available.";
-}
-
-function capitalizeTier(tier: string): string {
-	if (!tier) {
-		return "Anonymous";
-	}
-
-	return tier.charAt(0).toUpperCase() + tier.slice(1);
+	return `No account needed. ${styles}`;
 }

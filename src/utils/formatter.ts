@@ -1,11 +1,8 @@
-import { Editor } from "obsidian";
-import { CitationResult } from "../api";
+import type { Editor } from "obsidian";
+import type { CitationResult } from "./citation-result";
+import type { InsertFormat } from "./settings-migration";
 
-export type InsertFormat =
-	| "bibliography"
-	| "inText"
-	| "inTextNarrative"
-	| "both";
+export type { InsertFormat } from "./settings-migration";
 
 export function insertCitation(
 	editor: Editor,
@@ -18,19 +15,16 @@ export function insertCitation(
 
 	switch (format) {
 		case "bibliography":
-			editor.replaceRange(result.formatted.bibliography, cursor);
+			editor.replaceRange(result.formatted.reference, cursor);
 			break;
 		case "inText":
 			editor.replaceRange(result.formatted.inText, cursor);
-			break;
-		case "inTextNarrative":
-			editor.replaceRange(result.formatted.inTextNarrative, cursor);
 			break;
 		case "both":
 			editor.replaceRange(result.formatted.inText, cursor);
 			appendToReferencesSection(
 				editor,
-				result.formatted.bibliography,
+				result.formatted.reference,
 				result.paper.doi,
 				referencesHeading
 			);
@@ -40,7 +34,7 @@ export function insertCitation(
 	if (format !== "both" && addToReferences && format !== "bibliography") {
 		appendToReferencesSection(
 			editor,
-			result.formatted.bibliography,
+			result.formatted.reference,
 			result.paper.doi,
 			referencesHeading
 		);

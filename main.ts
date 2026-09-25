@@ -3,35 +3,26 @@ import { CitationResult, CiteMeApiError } from "./src/api";
 import { CiteMeSearchModal } from "./src/modals/search-modal";
 import { CiteMeDoiModal } from "./src/modals/doi-modal";
 import { CiteMeResultModal } from "./src/modals/result-modal";
+import { CiteMeSettingTab } from "./src/settings";
 import {
-	CiteMeSettings,
-	CiteMeSettingTab,
-	getDefaultSettings,
-} from "./src/settings";
-import {
-	CITEME_APP_URL,
-	CITEME_PRICING_URL,
-	CITATION_STYLES,
-} from "./src/utils/constants";
-import {
-	canUseStyle,
 	formatAccessSummary,
 	formatQuotaLabel,
 	getUsedQuota,
 	type QuotaInfo,
-	normalizeTier,
 } from "./src/utils/access";
 import { insertCitation, InsertFormat } from "./src/utils/formatter";
+import {
+	type CiteMeSettings,
+	normalizeSettings,
+} from "./src/utils/settings-migration";
 
 export default class CiteMePlugin extends Plugin {
-	settings: CiteMeSettings = getDefaultSettings();
+	settings: CiteMeSettings = normalizeSettings(null);
 	private statusBarEl: HTMLElement | null = null;
 	private quotaInfo: QuotaInfo | null = null;
-	private actionNotice: Notice | null = null;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
-		await this.ensureAccessibleDefaultStyle();
 
 		this.statusBarEl = this.addStatusBarItem();
 		this.updateStatusBar();
@@ -124,8 +115,7 @@ export default class CiteMePlugin extends Plugin {
 			(quota) => this.updateQuotaInfo(quota),
 			(error) => this.handleApiError(error),
 			initialQuery,
-			formatOverride,
-			this.getAccessTier()
+			formatOverride
 		);
 		modal.open();
 	}
@@ -144,8 +134,7 @@ export default class CiteMePlugin extends Plugin {
 				}).open();
 			},
 			(quota) => this.updateQuotaInfo(quota),
-			(error) => this.handleApiError(error),
-			this.getAccessTier()
+			(error) => this.handleApiError(error)
 		).open();
 	}
 
@@ -165,41 +154,15 @@ export default class CiteMePlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign(
-			getDefaultSettings(),
-			await this.loadData()
-		);
+		this.settings = normalizeSettings(await this.loadData());
 	}
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 	}
 
-	getAccessTier(): string {
-		return normalizeTier(this.quotaInfo?.tier);
-	}
-
 	getAccessSummary(): string {
 		return formatAccessSummary(this.quotaInfo);
-	}
-
-	showStyleUpgradeNotice(style: string): void {
-		const styleLabel = CITATION_STYLES[style] || style;
-		this.showActionNotice(
-			`"${styleLabel}" requires CiteMe Pro.`,
-			"Upgrade at citeme.app/pricing",
-			CITEME_PRICING_URL,
-			8000
-		);
-	}
-
-	private async ensureAccessibleDefaultStyle(): Promise<void> {
-		if (canUseStyle(this.settings.defaultStyle, this.getAccessTier())) {
-			return;
-		}
-
-		this.settings.defaultStyle = getDefaultSettings().defaultStyle;
-		await this.saveSettings();
 	}
 
 	private updateQuotaInfo(quota: QuotaInfo): void {
@@ -209,6 +172,7 @@ export default class CiteMePlugin extends Plugin {
 			limit: quota.limit ?? this.quotaInfo?.limit ?? null,
 			remaining: quota.remaining ?? this.quotaInfo?.remaining ?? null,
 			tier: quota.tier ?? this.quotaInfo?.tier ?? null,
+			window: quota.window ?? this.quotaInfo?.window ?? null,
 		};
 		this.updateStatusBar();
 
@@ -238,11 +202,6 @@ export default class CiteMePlugin extends Plugin {
 				return;
 			}
 
-			if (error.code === "style_requires_pro" && error.style) {
-				this.showStyleUpgradeNotice(error.style);
-				return;
-			}
-
 			new Notice(`CiteMe: ${error.message}`);
 			return;
 		}
@@ -253,48 +212,18 @@ export default class CiteMePlugin extends Plugin {
 	}
 
 	private showQuotaExceededNotice(): void {
+		// The plugin sends no credentials, so an account would not raise this
+		// limit — say what happened and when it clears, nothing more.
 		const used = getUsedQuota(this.quotaInfo);
 		const limit = this.quotaInfo?.limit;
+		const period =
+			this.quotaInfo?.window === "month"
+				? "this month"
+				: "in the last 24 hours";
 		const usage =
 			used !== null && limit !== null
-				? `You used ${used}/${limit} citations this month.`
-				: "Monthly citation limit reached.";
-
-		this.showActionNotice(
-			`${usage} Sign up free for more citations.`,
-			"Open citeme.app",
-			CITEME_APP_URL
-		);
-	}
-
-	private showActionNotice(
-		message: string,
-		linkLabel: string,
-		href: string,
-		duration = 0
-	): void {
-		this.actionNotice?.hide();
-		this.actionNotice = new Notice(
-			this.buildNoticeFragment(message, linkLabel, href),
-			duration
-		);
-	}
-
-	private buildNoticeFragment(
-		message: string,
-		linkLabel: string,
-		href: string
-	): DocumentFragment {
-		const fragment = document.createDocumentFragment();
-		fragment.append(`${message} `);
-
-		const link = document.createElement("a");
-		link.href = href;
-		link.target = "_blank";
-		link.rel = "noopener noreferrer";
-		link.textContent = linkLabel;
-		fragment.appendChild(link);
-
-		return fragment;
+				? `CiteMe search limit reached (${used}/${limit} ${period}).`
+				: "CiteMe search limit reached.";
+		new Notice(`${usage} Try again later.`, 8000);
 	}
 }

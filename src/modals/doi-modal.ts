@@ -1,7 +1,7 @@
 import { App, Modal, Notice, Setting } from "obsidian";
-import { CitationResult, CiteMeApiError, searchCitations } from "../api";
-import { CiteMeSettings } from "../settings";
-import { canUseStyle, type QuotaInfo } from "../utils/access";
+import { CitationResult, searchCitations } from "../api";
+import type { QuotaInfo } from "../utils/access";
+import type { CiteMeSettings } from "../utils/settings-migration";
 
 export class CiteMeDoiModal extends Modal {
 	private settings: CiteMeSettings;
@@ -9,22 +9,19 @@ export class CiteMeDoiModal extends Modal {
 	private onQuotaUpdate: (quota: QuotaInfo) => void;
 	private onApiError: (error: unknown) => void;
 	private inputValue = "";
-	private accessTier: string | null;
 
 	constructor(
 		app: App,
 		settings: CiteMeSettings,
 		onResult: (result: CitationResult) => void,
 		onQuotaUpdate: (quota: QuotaInfo) => void,
-		onApiError: (error: unknown) => void,
-		accessTier?: string | null
+		onApiError: (error: unknown) => void
 	) {
 		super(app);
 		this.settings = settings;
 		this.onResult = onResult;
 		this.onQuotaUpdate = onQuotaUpdate;
 		this.onApiError = onApiError;
-		this.accessTier = accessTier || null;
 	}
 
 	onOpen(): void {
@@ -49,7 +46,9 @@ export class CiteMeDoiModal extends Modal {
 		new Setting(contentEl).addButton((btn) => {
 			btn.setButtonText("Search")
 				.setCta()
-				.onClick(() => { void this.submitDoi(); });
+				.onClick(() => {
+					void this.submitDoi();
+				});
 		});
 	}
 
@@ -57,19 +56,6 @@ export class CiteMeDoiModal extends Modal {
 		const doi = this.inputValue.trim();
 		if (!doi) {
 			new Notice("Please enter a DOI");
-			return;
-		}
-
-		if (!canUseStyle(this.settings.defaultStyle, this.accessTier)) {
-			this.onApiError(
-				new CiteMeApiError(
-					"style_requires_pro",
-					"This citation style requires CiteMe Pro.",
-					403,
-					null,
-					this.settings.defaultStyle
-				)
-			);
 			return;
 		}
 
@@ -85,13 +71,13 @@ export class CiteMeDoiModal extends Modal {
 			);
 			this.onQuotaUpdate(response.quota);
 
-			if (response.data.citations.length === 0) {
+			if (response.citations.length === 0) {
 				new Notice("No results found for this DOI");
 				return;
 			}
 
 			this.close();
-			this.onResult(response.data.citations[0]);
+			this.onResult(response.citations[0]);
 		} catch (error) {
 			this.onApiError(error);
 		}

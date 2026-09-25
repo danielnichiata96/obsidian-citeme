@@ -3,24 +3,12 @@ import type CiteMePlugin from "../main";
 import {
 	SORT_OPTIONS,
 	INSERT_FORMATS,
-	DEFAULT_SETTINGS,
 	CITEME_APP_URL,
 } from "./utils/constants";
-import { canUseStyle, getCitationStyleOptions } from "./utils/access";
+import { getCitationStyleOptions } from "./utils/access";
+import type { CiteMeSettings } from "./utils/settings-migration";
 
-export interface CiteMeSettings {
-	defaultStyle: string;
-	defaultLimit: number;
-	insertFormat: "bibliography" | "inText" | "inTextNarrative" | "both";
-	addToReferencesSection: boolean;
-	referencesHeading: string;
-	sortBy: "relevance" | "year" | "citations";
-	apiBaseUrl: string;
-}
-
-export function getDefaultSettings(): CiteMeSettings {
-	return { ...DEFAULT_SETTINGS };
-}
+export type { CiteMeSettings } from "./utils/settings-migration";
 
 export class CiteMeSettingTab extends PluginSettingTab {
 	plugin: CiteMePlugin;
@@ -39,9 +27,9 @@ export class CiteMeSettingTab extends PluginSettingTab {
 			.setDesc(this.plugin.getAccessSummary());
 
 		new Setting(containerEl)
-			.setName("CiteMe account")
+			.setName("CiteMe on the web")
 			.setDesc(
-				"Sign in at citeme.app to unlock more citations and pro styles."
+				"The plugin works without an account. Your library, reference checking, and exports live on citeme.app."
 			)
 			.addButton((btn) => {
 				btn.setButtonText("Open citeme.app").onClick(() => {
@@ -51,25 +39,14 @@ export class CiteMeSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Citation style")
-			.setDesc(
-				"Default citation format style. Anonymous mode supports 10 styles; pro styles are marked."
-			)
+			.setDesc("Default citation style")
 			.addDropdown((dropdown) => {
-				for (const [value, label] of getCitationStyleOptions(
-					this.plugin.getAccessTier()
-				)) {
+				for (const [value, label] of getCitationStyleOptions()) {
 					dropdown.addOption(value, label);
 				}
 				dropdown.setValue(this.plugin.settings.defaultStyle);
-				let previousValue = this.plugin.settings.defaultStyle;
 				dropdown.onChange(async (value) => {
-					if (!canUseStyle(value, this.plugin.getAccessTier())) {
-						dropdown.setValue(previousValue);
-						this.plugin.showStyleUpgradeNotice(value);
-						return;
-					}
 					this.plugin.settings.defaultStyle = value;
-					previousValue = value;
 					await this.plugin.saveSettings();
 				});
 			});

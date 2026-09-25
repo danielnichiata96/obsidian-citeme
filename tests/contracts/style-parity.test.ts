@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CITATION_STYLES, FREE_TIER_STYLES } from "../../src/utils/constants";
+import { CITATION_STYLES } from "../../src/utils/constants";
 import {
 	hasLiveSaasContract,
 	loadLiveSaasContract,
@@ -24,38 +24,17 @@ describe("Style parity with SaaS", () => {
 		});
 	}
 
-	it("plugin has exactly the citation styles exposed by the SaaS", () => {
-		expect(Object.keys(CITATION_STYLES)).toHaveLength(
-			saasContract.styleSlugs.length
+	it("offers exactly the curated styles the SaaS formats", () => {
+		// v1.0.0 listed 43 of them and locked 33 behind a client-side "Pro"
+		// gate the API never applied.
+		expect(Object.keys(CITATION_STYLES).sort()).toEqual(
+			Object.keys(saasContract.styles).sort()
 		);
 	});
 
-	it("plugin styles match SaaS style slugs exactly", () => {
-		const pluginSlugs = Object.keys(CITATION_STYLES).sort();
-		expect(pluginSlugs).toEqual(saasContract.styleSlugs);
-	});
-
-	it("plugin has exactly the free tier styles exposed by the SaaS", () => {
-		expect(FREE_TIER_STYLES).toHaveLength(
-			saasContract.freeStyles.length
-		);
-	});
-
-	it("free tier styles match SaaS FREE_STYLES exactly", () => {
-		const pluginFree = [...FREE_TIER_STYLES].sort();
-		expect(pluginFree).toEqual(saasContract.freeStyles);
-	});
-
-	it("all free styles exist in CITATION_STYLES", () => {
-		for (const style of FREE_TIER_STYLES) {
-			expect(CITATION_STYLES).toHaveProperty(style);
-		}
-	});
-
-	it("every CITATION_STYLES key is a non-empty string slug", () => {
-		for (const key of Object.keys(CITATION_STYLES)) {
-			expect(key).toMatch(/^[a-z0-9-]+$/);
-			expect(CITATION_STYLES[key].length).toBeGreaterThan(0);
+	it("labels every style with the SaaS display name", () => {
+		for (const [slug, name] of Object.entries(saasContract.styles)) {
+			expect(CITATION_STYLES[slug]).toBe(name);
 		}
 	});
 });

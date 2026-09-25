@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { extractQuotaInfo, parseNumberHeader } from "../../src/utils/headers";
+import {
+	DAILY_QUOTA_HEADERS,
+	extractQuotaInfo,
+	parseNumberHeader,
+} from "../../src/utils/headers";
 import {
 	hasLiveSaasContract,
 	loadLiveSaasContract,
@@ -18,18 +22,32 @@ const saasContract = loadSaasContract();
 
 describe("Quota header parsing", () => {
 	if (hasLiveSaasContract()) {
-		it("checked-in snapshot matches the live SaaS quota headers", () => {
+		it("checked-in snapshot matches the live SaaS contract", () => {
 			expect(loadSnapshotSaasContract()).toEqual(loadLiveSaasContract());
 		});
 	}
 
-	it("the plugin tracks the canonical quota headers exposed by the SaaS", () => {
-		expect(saasContract.quotaHeaders).toEqual([
-			"X-Quota-Limit",
-			"X-Quota-Remaining",
-			"X-Quota-Tier",
-			"X-Quota-Used",
-		]);
+	it("reads the daily headers GET /api/v1/cite sends to anonymous callers", () => {
+		// v1.0.0 parsed only X-Quota-*, which GET /cite never sends, so the
+		// status bar was stuck on "CiteMe: Anonymous".
+		for (const header of Object.values(DAILY_QUOTA_HEADERS)) {
+			expect(saasContract.anonymousDailyHeaders).toContain(header);
+		}
+	});
+
+	it("parses the anonymous daily budget", () => {
+		const quota = extractQuotaInfo({
+			"x-ratelimit-daily-limit": "500",
+			"x-ratelimit-daily-remaining": "494",
+			"x-ratelimit-daily-reset": "46428",
+		});
+		expect(quota).toEqual({
+			used: 6,
+			limit: 500,
+			remaining: 494,
+			tier: "anonymous",
+			window: "day",
+		});
 	});
 
 	it("parses standard quota headers", () => {
@@ -45,6 +63,7 @@ describe("Quota header parsing", () => {
 			limit: 20,
 			remaining: 15,
 			tier: "free",
+			window: "month",
 		});
 	});
 
@@ -67,6 +86,7 @@ describe("Quota header parsing", () => {
 			limit: null,
 			remaining: null,
 			tier: null,
+			window: null,
 		});
 	});
 

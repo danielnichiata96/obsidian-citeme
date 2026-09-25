@@ -1,5 +1,6 @@
 import { App, Modal } from "obsidian";
 import { CitationResult } from "../api";
+import { formatAuthorList } from "../utils/citation-result";
 
 export class CiteMeResultModal extends Modal {
 	private result: CitationResult;
@@ -28,7 +29,7 @@ export class CiteMeResultModal extends Modal {
 
 		if (paper.authors.length > 0) {
 			metaEl.createEl("p", {
-				text: `Authors: ${paper.authors.join(", ")}`,
+				text: `Authors: ${formatAuthorList(paper.authors)}`,
 			});
 		}
 		if (paper.year) {
@@ -65,17 +66,8 @@ export class CiteMeResultModal extends Modal {
 			cls: "citeme-detail-citations",
 		});
 
-		createCitationBlock(
-			citationsEl,
-			"Bibliography",
-			formatted.bibliography
-		);
+		createCitationBlock(citationsEl, "Bibliography", formatted.reference);
 		createCitationBlock(citationsEl, "In-text", formatted.inText);
-		createCitationBlock(
-			citationsEl,
-			"Narrative",
-			formatted.inTextNarrative
-		);
 
 		const btnContainer = contentEl.createDiv({
 			cls: "citeme-detail-buttons",

@@ -1,39 +1,20 @@
 import { requestUrl } from "obsidian";
 import { CITEME_SOURCE_HEADER } from "./utils/constants";
-import { type QuotaInfo, isProStyle } from "./utils/access";
+import type { QuotaInfo } from "./utils/access";
 import { extractQuotaInfo } from "./utils/headers";
+import {
+	type CitationResult,
+	normalizeCitationResult,
+} from "./utils/citation-result";
 
-export interface Paper {
-	id: string;
-	title: string;
-	authors: string[];
-	year: number;
-	doi: string | null;
-	venue: string | null;
-	citationCount: number;
-	abstract: string | null;
-}
-
-export interface FormattedCitation {
-	bibliography: string;
-	inText: string;
-	inTextNarrative: string;
-}
-
-export interface CitationResult {
-	paper: Paper;
-	formatted: FormattedCitation;
-}
+export type {
+	CitationResult,
+	FormattedCitation,
+	Paper,
+} from "./utils/citation-result";
 
 export interface CiteResponse {
-	success: boolean;
-	data: {
-		citations: CitationResult[];
-		meta: {
-			style: string;
-			stats: { totalResults: number };
-		};
-	};
+	citations: CitationResult[];
 	quota: QuotaInfo;
 }
 
@@ -47,11 +28,7 @@ export interface SearchParams {
 	sortBy?: string;
 }
 
-export type CiteMeApiErrorCode =
-	| "network"
-	| "quota_exceeded"
-	| "style_requires_pro"
-	| "api";
+export type CiteMeApiErrorCode = "network" | "quota_exceeded" | "api";
 
 export class CiteMeApiError extends Error {
 	code: CiteMeApiErrorCode;
@@ -104,13 +81,26 @@ export async function searchCitations(
 		);
 	}
 
-	const json = response.json;
+	const json = response.json as unknown;
 	if (
-		!json ||
-		typeof json !== "object" ||
-		!("success" in json) ||
-		!("data" in json)
+		json &&
+		typeof json === "object" &&
+		(json as { success?: unknown }).success === false
 	) {
+		throw buildApiError(
+			response.status,
+			response.text,
+			quota,
+			params.style
+		);
+	}
+	const data =
+		json &&
+		typeof json === "object" &&
+		(json as { success?: unknown }).success
+			? (json as { data?: { citations?: unknown } }).data
+			: undefined;
+	if (!data || !Array.isArray(data.citations)) {
 		throw new CiteMeApiError(
 			"api",
 			"Unexpected API response format",
@@ -120,17 +110,8 @@ export async function searchCitations(
 		);
 	}
 
-	if (!json.success) {
-		throw buildApiError(
-			response.status,
-			response.text,
-			quota,
-			params.style
-		);
-	}
-
 	return {
-		...(json as Omit<CiteResponse, "quota">),
+		citations: data.citations.map(normalizeCitationResult),
 		quota,
 	};
 }
@@ -195,20 +176,10 @@ function buildApiError(
 	) {
 		return new CiteMeApiError(
 			"quota_exceeded",
-			message || "Monthly citation limit reached.",
+			message || "CiteMe search limit reached. Try again later.",
 			status,
 			quota,
 			style ?? null
-		);
-	}
-
-	if (status === 403 && style && isProStyle(style)) {
-		return new CiteMeApiError(
-			"style_requires_pro",
-			message || "This citation style requires CiteMe Pro.",
-			status,
-			quota,
-			style
 		);
 	}
 

@@ -1,13 +1,24 @@
 import { describe, it, expect } from "vitest";
 import {
 	normalizeTier,
-	canUseStyle,
-	isProStyle,
-	getCitationStyleLabel,
+	getCitationStyleOptions,
 	getUsedQuota,
 	formatQuotaLabel,
 	formatAccessSummary,
+	type QuotaInfo,
 } from "../../src/utils/access";
+import { CITATION_STYLES } from "../../src/utils/constants";
+
+function quota(partial: Partial<QuotaInfo>): QuotaInfo {
+	return {
+		used: null,
+		limit: null,
+		remaining: null,
+		tier: null,
+		window: null,
+		...partial,
+	};
+}
 
 describe("normalizeTier", () => {
 	it("returns 'anonymous' for null/undefined", () => {
@@ -17,57 +28,20 @@ describe("normalizeTier", () => {
 	});
 
 	it("normalizes to lowercase trimmed", () => {
-		expect(normalizeTier("Pro")).toBe("pro");
-		expect(normalizeTier("  Free  ")).toBe("free");
+		expect(normalizeTier("  Pro ")).toBe("pro");
+		expect(normalizeTier("FREE")).toBe("free");
 	});
 });
 
-describe("canUseStyle", () => {
-	it("allows any style for pro tier", () => {
-		expect(canUseStyle("nature", "pro")).toBe(true);
-		expect(canUseStyle("apa", "pro")).toBe(true);
-	});
-
-	it("allows free styles for anonymous", () => {
-		expect(canUseStyle("apa", null)).toBe(true);
-		expect(canUseStyle("mla", "free")).toBe(true);
-	});
-
-	it("blocks pro styles for non-pro tiers", () => {
-		expect(canUseStyle("nature", null)).toBe(false);
-		expect(canUseStyle("nature", "free")).toBe(false);
-	});
-
-	it("returns true for empty style", () => {
-		expect(canUseStyle("", null)).toBe(true);
-	});
-});
-
-describe("isProStyle", () => {
-	it("returns false for free styles", () => {
-		expect(isProStyle("apa")).toBe(false);
-		expect(isProStyle("ieee")).toBe(false);
-		expect(isProStyle("abnt")).toBe(false);
-	});
-
-	it("returns true for pro styles", () => {
-		expect(isProStyle("nature")).toBe(true);
-		expect(isProStyle("cell")).toBe(true);
-		expect(isProStyle("lancet")).toBe(true);
-	});
-});
-
-describe("getCitationStyleLabel", () => {
-	it("returns label without suffix for accessible style", () => {
-		expect(getCitationStyleLabel("apa", "free")).toBe("APA (7th edition)");
-	});
-
-	it("appends (Pro) for inaccessible style", () => {
-		expect(getCitationStyleLabel("nature", "free")).toBe("Nature (Pro)");
-	});
-
-	it("returns plain label for pro tier", () => {
-		expect(getCitationStyleLabel("nature", "pro")).toBe("Nature");
+describe("getCitationStyleOptions", () => {
+	it("offers every curated style with a plain label", () => {
+		// 1.0.0 marked 33 styles "(Pro)" and refused them, although the API
+		// formats all curated styles for anonymous callers.
+		const options = getCitationStyleOptions();
+		expect(options).toHaveLength(Object.keys(CITATION_STYLES).length);
+		for (const [, label] of options) {
+			expect(label).not.toMatch(/\(Pro\)/);
+		}
 	});
 });
 
@@ -78,77 +52,55 @@ describe("getUsedQuota", () => {
 	});
 
 	it("returns used when present", () => {
-		expect(
-			getUsedQuota({ used: 5, limit: 20, remaining: 15, tier: "free" })
-		).toBe(5);
+		expect(getUsedQuota(quota({ used: 5, limit: 20, remaining: 15 }))).toBe(5);
 	});
 
 	it("computes used from limit - remaining", () => {
-		expect(
-			getUsedQuota({
-				used: null,
-				limit: 20,
-				remaining: 15,
-				tier: "free",
-			})
-		).toBe(5);
+		expect(getUsedQuota(quota({ limit: 20, remaining: 15 }))).toBe(5);
 	});
 
 	it("returns null when insufficient data", () => {
-		expect(
-			getUsedQuota({
-				used: null,
-				limit: null,
-				remaining: null,
-				tier: null,
-			})
-		).toBeNull();
+		expect(getUsedQuota(quota({}))).toBeNull();
 	});
 });
 
 describe("formatQuotaLabel", () => {
 	it("returns Pro label for pro tier", () => {
-		expect(
-			formatQuotaLabel({
-				used: 100,
-				limit: null,
-				remaining: null,
-				tier: "pro",
-			})
-		).toBe("CiteMe: Pro");
+		expect(formatQuotaLabel(quota({ used: 100, tier: "pro" }))).toBe(
+			"CiteMe: Pro"
+		);
 	});
 
-	it("returns usage label when data available", () => {
+	it("labels the anonymous rolling 24h budget as such", () => {
 		expect(
-			formatQuotaLabel({
-				used: 5,
-				limit: 20,
-				remaining: 15,
-				tier: "free",
-			})
-		).toBe("CiteMe: 5/20 citations");
+			formatQuotaLabel(
+				quota({
+					used: 6,
+					limit: 500,
+					remaining: 494,
+					tier: "anonymous",
+					window: "day",
+				})
+			)
+		).toBe("CiteMe: 6/500 searches (24h)");
+	});
+
+	it("labels a monthly plan quota as monthly", () => {
+		expect(
+			formatQuotaLabel(
+				quota({ used: 5, limit: 20, remaining: 15, tier: "free", window: "month" })
+			)
+		).toBe("CiteMe: 5/20 citations this month");
 	});
 
 	it("returns limit reached when remaining is 0", () => {
-		expect(
-			formatQuotaLabel({
-				used: null,
-				limit: null,
-				remaining: 0,
-				tier: null,
-			})
-		).toBe("CiteMe: Limit reached");
+		expect(formatQuotaLabel(quota({ remaining: 0 }))).toBe(
+			"CiteMe: Limit reached"
+		);
 	});
 
 	it("returns Free for free tier without usage data", () => {
-		expect(
-			formatQuotaLabel({
-				used: null,
-				limit: null,
-				remaining: null,
-				tier: "free",
-			})
-		).toBe("CiteMe: Free");
+		expect(formatQuotaLabel(quota({ tier: "free" }))).toBe("CiteMe: Free");
 	});
 
 	it("returns Anonymous for unknown tier", () => {
@@ -157,18 +109,24 @@ describe("formatQuotaLabel", () => {
 });
 
 describe("formatAccessSummary", () => {
-	it("returns pro message for pro tier", () => {
-		expect(
-			formatAccessSummary({
-				used: null,
-				limit: null,
-				remaining: null,
-				tier: "pro",
-			})
-		).toContain("Pro unlocked");
+	it("says no account is needed and how many styles are available", () => {
+		const summary = formatAccessSummary(null);
+		expect(summary).toContain("No account needed");
+		expect(summary).toContain(String(Object.keys(CITATION_STYLES).length));
+		expect(summary).not.toMatch(/Pro|sign in|upgrade/i);
 	});
 
-	it("returns anonymous message for null", () => {
-		expect(formatAccessSummary(null)).toContain("Anonymous");
+	it("reports the 24h usage when the API sent it", () => {
+		expect(
+			formatAccessSummary(
+				quota({
+					used: 6,
+					limit: 500,
+					remaining: 494,
+					tier: "anonymous",
+					window: "day",
+				})
+			)
+		).toContain("6/500 searches in the last 24 hours");
 	});
 });
