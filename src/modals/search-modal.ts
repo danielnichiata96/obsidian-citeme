@@ -10,7 +10,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 	private onChoose: (result: CitationResult) => void;
 	private onQuotaUpdate: (quota: QuotaInfo) => void;
 	private onApiError: (error: unknown) => void;
-	private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+	private debounceTimer: number | null = null;
 	private lastResults: CitationResult[] = [];
 	private pendingResolve: ((results: CitationResult[]) => void) | null = null;
 	private initialQuery: string;
@@ -57,7 +57,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 		if (!query || query.length < 3) {
 			this.currentRequestId++;
 			if (this.debounceTimer) {
-				clearTimeout(this.debounceTimer);
+				window.clearTimeout(this.debounceTimer);
 				this.debounceTimer = null;
 			}
 			if (this.pendingResolve) {
@@ -72,7 +72,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 
 		return new Promise((resolve) => {
 			if (this.debounceTimer) {
-				clearTimeout(this.debounceTimer);
+				window.clearTimeout(this.debounceTimer);
 			}
 			if (this.pendingResolve) {
 				this.pendingResolve([]);
@@ -82,7 +82,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 			const requestId = ++this.currentRequestId;
 			this.pendingResolve = resolve;
 
-			this.debounceTimer = setTimeout(() => {
+			this.debounceTimer = window.setTimeout(() => {
 				void (async () => {
 					try {
 						const response = await searchCitations(
@@ -172,7 +172,7 @@ export class CiteMeSearchModal extends SuggestModal<CitationResult> {
 
 	onClose(): void {
 		if (this.debounceTimer) {
-			clearTimeout(this.debounceTimer);
+			window.clearTimeout(this.debounceTimer);
 			this.debounceTimer = null;
 		}
 		if (this.pendingResolve) {

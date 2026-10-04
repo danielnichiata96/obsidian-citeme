@@ -40,7 +40,7 @@ export class CiteMeDoiModal extends Modal {
 					void this.submitDoi();
 				}
 			});
-			setTimeout(() => text.inputEl.focus(), 50);
+			window.setTimeout(() => text.inputEl.focus(), 50);
 		});
 
 		new Setting(contentEl).addButton((btn) => {
