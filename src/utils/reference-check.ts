@@ -155,14 +155,32 @@ export function extractReferencesForCheck(
 	const headingIndex = findHeadingIndex(lines, heading.trim());
 	if (headingIndex === -1) return null;
 	const sectionEnd = findSectionEnd(lines, headingIndex);
-	// Footnote definitions often sit at the very end of a note, inside the
-	// last section; they are not references.
-	const text = lines
-		.slice(headingIndex + 1, sectionEnd)
-		.filter((line) => !/^\s*\[\^[^\]]+\]:/.test(line))
+	const text = withoutFootnotes(lines.slice(headingIndex + 1, sectionEnd))
 		.join("\n")
 		.trim();
 	return text || null;
+}
+
+/**
+ * Footnote definitions often sit at the very end of a note, inside the last
+ * section, and they are not references. A definition continues on indented
+ * lines, across blank lines, until the next line that is not indented.
+ */
+function withoutFootnotes(lines: string[]): string[] {
+	const kept: string[] = [];
+	let inFootnote = false;
+	for (const line of lines) {
+		if (/^ {0,3}\[\^[^\]]+\]:/.test(line)) {
+			inFootnote = true;
+			continue;
+		}
+		if (inFootnote && (line.trim() === "" || /^(\t| {2,})/.test(line))) {
+			continue;
+		}
+		inFootnote = false;
+		kept.push(line);
+	}
+	return kept;
 }
 
 export function normalizeReferenceCheckResponse(json: unknown): {

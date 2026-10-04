@@ -150,6 +150,35 @@ describe("extractReferencesForCheck", () => {
 		);
 	});
 
+	it("leaves out every line of a multi-line footnote", () => {
+		const note = [
+			"## References",
+			"",
+			"Doe, J. (2020). A title. Journal.",
+			"",
+			"[^1]: Personal note about the interview.",
+			"    Confidential continuation of that note.",
+			"",
+			"    Second paragraph of the same footnote.",
+		].join("\n");
+		expect(extractReferencesForCheck(note, "## References")).toBe(
+			"Doe, J. (2020). A title. Journal."
+		);
+	});
+
+	it("keeps a reference that follows a footnote", () => {
+		const note = [
+			"## References",
+			"",
+			"[^1]: A footnote.",
+			"",
+			"Doe, J. (2020). A title. Journal.",
+		].join("\n");
+		expect(extractReferencesForCheck(note, "## References")).toBe(
+			"Doe, J. (2020). A title. Journal."
+		);
+	});
+
 	it("stops at the next heading when the References heading is indented", () => {
 		const indented = note.replace("## References", "  ## References");
 		expect(extractReferencesForCheck(indented, "## References")).not.toContain(
