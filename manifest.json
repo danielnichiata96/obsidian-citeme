@@ -1,9 +1,9 @@
 {
 	"id": "citeme",
 	"name": "CiteMe - Academic Citations",
-	"version": "1.0.2",
+	"version": "1.1.0",
 	"minAppVersion": "1.4.0",
-	"description": "Search scholarly databases and insert formatted citations in 60 styles, including APA, MLA, Chicago, and ABNT. No account needed.",
+	"description": "Search scholarly databases, insert formatted citations in 60 styles, and check whether the references in a note exist. No account needed.",
 	"author": "CiteMe",
 	"authorUrl": "https://citeme.app",
 	"fundingUrl": "https://citeme.app/pricing",

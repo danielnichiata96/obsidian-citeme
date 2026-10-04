@@ -1,6 +1,6 @@
 # CiteMe - Academic Citations for Obsidian
 
-Search scholarly databases and insert formatted citations from CiteMe directly in Obsidian. No account needed.
+Search scholarly databases, insert formatted citations, and check whether the references in a note exist, without leaving Obsidian. No account needed.
 
 ![Searching for a paper from the CiteMe modal in Obsidian](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/search.png)
 
@@ -11,6 +11,7 @@ Search scholarly databases and insert formatted citations from CiteMe directly i
 - **Smart insertion** - Insert in-text citations, full bibliography entries, or both
 - **References management** - Automatically builds and maintains a References section in your notes
 - **Duplicate detection** - Prevents adding the same citation twice (checks by DOI and text)
+- **Reference check** - Checks the references in a note against scholarly databases and marks each one found, to review, or not found
 - **DOI lookup** - Search directly by DOI for precise results
 - **Usage visibility** - Shows your searches in the last 24 hours in the Obsidian status bar
 - **Mobile compatible** - Works on both desktop and mobile Obsidian
@@ -54,9 +55,27 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 
 ![An in-text citation in the note and the full entries under References](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/insert-and-references.png)
 
+### Check References
+
+Run "Check references in this note" from the command palette. The plugin sends the selected text, or the entries under your References heading when nothing is selected, to CiteMe's reference checker. You can also select references, right-click, and choose "Check selected references".
+
+Each reference comes back as:
+
+| Result | Meaning |
+|--------|---------|
+| **Found** | A matching record exists; the DOI links to it |
+| **To review** | A partial match, a different DOI, a retracted work, or grey literature |
+| **Not found** | No matching record. Real works that are not indexed also end up here, so check it by hand before assuming it is fabricated |
+
+A match does not confirm the year, journal, or pages.
+
+![Reference check results for a note](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/check-references.png)
+
 ### Limits
 
 The plugin needs no account. Searches share CiteMe's anonymous budget of 500 searches per 24 hours per network, and the status bar shows how many you have used. Search runs after you pause typing, so each query costs one search.
+
+Without an account, a reference check covers up to 10 references and each network gets 5 checks a month. To check longer lists, create a token in your CiteMe settings and paste it into the plugin's "CiteMe token" setting: checks then use your CiteMe plan, and CiteMe Pro has no monthly limit.
 
 ### DOI Lookup
 
@@ -79,6 +98,7 @@ When enabled (default), the plugin automatically:
 | Insert format | Bibliography | How citations are inserted |
 | Sort by | Relevance | Result sorting order |
 | Add to References | On | Auto-append to References section |
+| CiteMe token | Empty | Optional. Reference checks use your CiteMe plan instead of the anonymous limits |
 | References heading | `## References` | Heading text for the references section |
 
 ![CiteMe plugin settings](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/settings.png)
@@ -89,7 +109,7 @@ All 60 curated CiteMe styles are available, including APA, MLA, Chicago (Author-
 
 ## Network & Privacy Disclosure
 
-This plugin connects to the CiteMe API (https://citeme.app) to search academic databases and format citations. Your search text is sent to CiteMe to run the search. Requests are tagged with `X-Source: obsidian-plugin` for channel attribution and carry no account credentials. See CiteMe's privacy policy at https://citeme.app/privacy.
+This plugin connects to the CiteMe API (https://citeme.app) to search academic databases, format citations, and check references. Your search text is sent to CiteMe to run the search. A reference check sends the selected text, or the entries under your References heading, to CiteMe. Requests are tagged with `X-Source: obsidian-plugin` for channel attribution. Searches carry no account credentials. If you add a CiteMe token, reference checks send it in the `Authorization` header; the token is stored in the plugin's `data.json` inside your vault, so leave it out of vaults you share or publish. See CiteMe's privacy policy at https://citeme.app/privacy.
 
 ## Development
 
