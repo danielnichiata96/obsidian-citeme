@@ -108,3 +108,9 @@ export const SEARCH_DEBOUNCE_MS = 800;
 
 export const CITEME_SOURCE_HEADER = "obsidian-plugin";
 export const CITEME_APP_URL = "https://citeme.app";
+
+/**
+ * Links opened from Obsidian reach the browser without a referrer, so the
+ * site can only attribute the visit through UTM parameters.
+ */
+export const CITEME_SETTINGS_LINK = `${CITEME_APP_URL}/?utm_source=obsidian&utm_medium=plugin&utm_campaign=settings`;

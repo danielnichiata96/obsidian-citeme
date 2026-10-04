@@ -3,7 +3,7 @@ import type CiteMePlugin from "../main";
 import {
 	SORT_OPTIONS,
 	INSERT_FORMATS,
-	CITEME_APP_URL,
+	CITEME_SETTINGS_LINK,
 } from "./utils/constants";
 import { getCitationStyleOptions } from "./utils/access";
 import type { CiteMeSettings } from "./utils/settings-migration";
@@ -33,7 +33,7 @@ export class CiteMeSettingTab extends PluginSettingTab {
 			)
 			.addButton((btn) => {
 				btn.setButtonText("Open citeme.app").onClick(() => {
-					window.open(CITEME_APP_URL, "_blank");
+					window.open(CITEME_SETTINGS_LINK, "_blank");
 				});
 			});
 
