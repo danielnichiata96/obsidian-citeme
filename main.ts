@@ -1,5 +1,6 @@
 import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
-import { CitationResult, CiteMeApiError } from "./src/api";
+import { CitationResult, CiteMeApiError, checkReferences } from "./src/api";
+import { CiteMeCheckModal } from "./src/modals/check-modal";
 import { CiteMeSearchModal } from "./src/modals/search-modal";
 import { CiteMeDoiModal } from "./src/modals/doi-modal";
 import { CiteMeResultModal } from "./src/modals/result-modal";
@@ -11,6 +12,7 @@ import {
 	type QuotaInfo,
 } from "./src/utils/access";
 import { insertCitation, InsertFormat } from "./src/utils/formatter";
+import { extractReferencesForCheck } from "./src/utils/reference-check";
 import {
 	type CiteMeSettings,
 	normalizeSettings,
@@ -64,6 +66,14 @@ export default class CiteMePlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "check-references",
+			name: "Check references in this note",
+			editorCallback: (editor: Editor) => {
+				this.checkReferences(editor);
+			},
+		});
+
 		this.addRibbonIcon("book-open", "CiteMe: search citations", () => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 			if (!view) {
@@ -82,6 +92,13 @@ export default class CiteMePlugin extends Plugin {
 							.setIcon("book-open")
 							.onClick(() => {
 								this.openSearchModal(editor, selection);
+							});
+					});
+					menu.addItem((item) => {
+						item.setTitle("Check selected references")
+							.setIcon("search-check")
+							.onClick(() => {
+								this.checkReferences(editor);
 							});
 					});
 				}
@@ -118,6 +135,27 @@ export default class CiteMePlugin extends Plugin {
 			formatOverride
 		);
 		modal.open();
+	}
+
+	/** Check the selection, or the References section when nothing is selected. */
+	private checkReferences(editor: Editor): void {
+		const heading = this.settings.referencesHeading;
+		const text =
+			editor.getSelection().trim() ||
+			extractReferencesForCheck(editor.getValue(), heading);
+		if (!text) {
+			new Notice(
+				`Select the references to check, or add a "${heading}" section to this note.`
+			);
+			return;
+		}
+
+		const { apiBaseUrl, apiToken } = this.settings;
+		new CiteMeCheckModal(
+			this.app,
+			() => checkReferences(text, apiBaseUrl, apiToken),
+			apiToken.trim() !== ""
+		).open();
 	}
 
 	private openDoiModal(editor: Editor): void {

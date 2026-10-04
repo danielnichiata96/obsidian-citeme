@@ -51,3 +51,54 @@
 	display: flex;
 	justify-content: flex-end;
 }
+
+.citeme-check-summary {
+	font-weight: 600;
+}
+
+.citeme-check-list {
+	margin: 8px 0;
+}
+
+.citeme-check-item {
+	padding: 8px 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.citeme-check-badge {
+	display: inline-block;
+	font-size: 0.8em;
+	padding: 1px 6px;
+	border-radius: 4px;
+	margin-bottom: 4px;
+}
+
+.citeme-check-found {
+	color: var(--text-success);
+	background: rgba(var(--color-green-rgb), 0.12);
+}
+
+.citeme-check-review {
+	color: var(--text-warning);
+	background: rgba(var(--color-orange-rgb), 0.12);
+}
+
+.citeme-check-missing {
+	color: var(--text-error);
+	background: rgba(var(--color-red-rgb), 0.12);
+}
+
+.citeme-check-title {
+	line-height: 1.4;
+}
+
+.citeme-check-detail,
+.citeme-check-note,
+.citeme-check-status {
+	font-size: 0.85em;
+	color: var(--text-muted);
+}
+
+.citeme-check-warning {
+	color: var(--text-warning);
+}

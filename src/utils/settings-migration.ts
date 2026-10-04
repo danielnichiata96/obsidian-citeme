@@ -10,6 +10,8 @@ export interface CiteMeSettings {
 	referencesHeading: string;
 	sortBy: "relevance" | "year" | "citations";
 	apiBaseUrl: string;
+	/** Optional CiteMe API token; only the reference check sends it. */
+	apiToken: string;
 }
 
 /**

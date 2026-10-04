@@ -98,6 +98,7 @@ export const DEFAULT_SETTINGS = {
 	referencesHeading: "## References",
 	sortBy: "relevance" as const,
 	apiBaseUrl: "https://citeme.app",
+	apiToken: "",
 };
 
 /**
@@ -114,3 +115,10 @@ export const CITEME_APP_URL = "https://citeme.app";
  * site can only attribute the visit through UTM parameters.
  */
 export const CITEME_SETTINGS_LINK = `${CITEME_APP_URL}/?utm_source=obsidian&utm_medium=plugin&utm_campaign=settings`;
+
+/** Where a CiteMe user creates the token the reference check can send. */
+export const CITEME_TOKEN_LINK = `${CITEME_APP_URL}/settings?utm_source=obsidian&utm_medium=plugin&utm_campaign=token#account`;
+
+export const CITEME_CHECKER_LINK = `${CITEME_APP_URL}/tools/reference-checker?utm_source=obsidian&utm_medium=plugin&utm_campaign=check_references`;
+
+export const CITEME_PRICING_LINK = `${CITEME_APP_URL}/pricing?utm_source=obsidian&utm_medium=plugin&utm_campaign=check_references`;

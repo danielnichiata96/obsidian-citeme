@@ -6,6 +6,13 @@ import {
 	type CitationResult,
 	normalizeCitationResult,
 } from "./utils/citation-result";
+import {
+	type CheckFailure,
+	type ReferenceCheckQuota,
+	type ReferenceCheckReport,
+	describeReferenceCheckFailure,
+	normalizeReferenceCheckResponse,
+} from "./utils/reference-check";
 
 export type {
 	CitationResult,
@@ -114,6 +121,70 @@ export async function searchCitations(
 		citations: data.citations.map(normalizeCitationResult),
 		quota,
 	};
+}
+
+export class ReferenceCheckError extends Error {
+	failure: CheckFailure;
+
+	constructor(failure: CheckFailure) {
+		super(failure.message);
+		this.name = "ReferenceCheckError";
+		this.failure = failure;
+	}
+}
+
+export interface CheckResponse {
+	report: ReferenceCheckReport;
+	quota: ReferenceCheckQuota | null;
+}
+
+/**
+ * POST the references to CiteMe's checker. With a token the check runs on the
+ * user's plan; without one it uses the anonymous per-network limits.
+ */
+export async function checkReferences(
+	text: string,
+	baseUrl: string,
+	token: string
+): Promise<CheckResponse> {
+	const headers: Record<string, string> = {
+		"X-Source": CITEME_SOURCE_HEADER,
+	};
+	if (token.trim()) {
+		headers.Authorization = `Bearer ${token.trim()}`;
+	}
+
+	let response;
+	try {
+		response = await requestUrl({
+			url: `${baseUrl}/api/v1/reference-check`,
+			method: "POST",
+			contentType: "application/json",
+			body: JSON.stringify({ text }),
+			headers,
+			throw: false,
+		});
+	} catch {
+		throw new ReferenceCheckError({
+			action: null,
+			message: "Could not reach CiteMe. Check your internet connection.",
+		});
+	}
+
+	if (response.status >= 400) {
+		throw new ReferenceCheckError(
+			describeReferenceCheckFailure(response.status, response.text)
+		);
+	}
+
+	try {
+		return normalizeReferenceCheckResponse(response.json);
+	} catch {
+		throw new ReferenceCheckError({
+			action: null,
+			message: "CiteMe sent a reference check this plugin cannot read.",
+		});
+	}
 }
 
 function buildCiteApiUrl(params: SearchParams, baseUrl: string): URL {

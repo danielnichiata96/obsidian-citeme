@@ -4,7 +4,12 @@ import {
 	SORT_OPTIONS,
 	INSERT_FORMATS,
 	CITEME_SETTINGS_LINK,
+	CITEME_TOKEN_LINK,
 } from "./utils/constants";
+import {
+	ANONYMOUS_CHECKS_PER_MONTH,
+	ANONYMOUS_REFERENCES_PER_CHECK,
+} from "./utils/reference-check";
 import { getCitationStyleOptions } from "./utils/access";
 import type { CiteMeSettings } from "./utils/settings-migration";
 
@@ -107,6 +112,26 @@ export class CiteMeSettingTab extends PluginSettingTab {
 						this.plugin.settings.addToReferencesSection = value;
 						await this.plugin.saveSettings();
 					});
+			});
+
+		new Setting(containerEl)
+			.setName("CiteMe token")
+			.setDesc(
+				`Optional, for "Check references in this note". With a token, checks use your CiteMe plan; Pro has no monthly limit. Without one, a check covers up to ${ANONYMOUS_REFERENCES_PER_CHECK} references and each network gets ${ANONYMOUS_CHECKS_PER_MONTH} checks a month. The token is saved in this vault's plugin data, so leave it out of vaults you share.`
+			)
+			.addText((text) => {
+				text.inputEl.type = "password";
+				text.setPlaceholder("cme_...")
+					.setValue(this.plugin.settings.apiToken)
+					.onChange(async (value) => {
+						this.plugin.settings.apiToken = value.trim();
+						await this.plugin.saveSettings();
+					});
+			})
+			.addButton((btn) => {
+				btn.setButtonText("Create a token").onClick(() => {
+					window.open(CITEME_TOKEN_LINK, "_blank");
+				});
 			});
 
 		new Setting(containerEl)

@@ -1,0 +1,115 @@
+{
+	"success": true,
+	"data": {
+		"report": {
+			"score": 67,
+			"badge": "NEEDS_REVIEW",
+			"summary": {
+				"total": 3,
+				"verified": 2,
+				"partialMatch": 0,
+				"unverified": 1
+			},
+			"hallucinatedCount": 0,
+			"references": [
+				{
+					"index": 1,
+					"rawText": "Diekelmann, S., & Born, J. (2010). The memory function of sleep. Nature Reviews Neuroscience, 11(2), 114–126. https://doi.org/10.1038/nrn2762",
+					"status": "verified",
+					"confidence": 1,
+					"source": "crossref",
+					"parsed": {
+						"authors": [
+							"Diekelmann, S.",
+							"Born, J"
+						],
+						"title": "The memory function of sleep",
+						"year": 2010,
+						"doi": "10.1038/nrn2762",
+						"venue": "Nature Reviews Neuroscience"
+					},
+					"found": {
+						"title": "The memory function of sleep",
+						"authors": [
+							"Susanne Diekelmann",
+							"Jan Born"
+						],
+						"year": 2010,
+						"doi": "10.1038/nrn2762",
+						"venue": "Nature Reviews Neuroscience",
+						"url": "https://doi.org/10.1038/nrn2762"
+					},
+					"issues": [],
+					"structuredIssues": [],
+					"likelyHallucinated": false,
+					"verificationKind": "indexed"
+				},
+				{
+					"index": 2,
+					"rawText": "Girardeau, G., & Lopes-dos-Santos, V. (2021). Brain neural patterns and the memory function of sleep. Science, 374(6567), 560–564. https://doi.org/10.1126/science.abi8370",
+					"status": "verified",
+					"confidence": 1,
+					"source": "crossref",
+					"parsed": {
+						"authors": [
+							"Girardeau, G.",
+							"Lopes-dos-Santos, V"
+						],
+						"title": "Brain neural patterns and the memory function of sleep",
+						"year": 2021,
+						"doi": "10.1126/science.abi8370",
+						"venue": "Science"
+					},
+					"found": {
+						"title": "Brain neural patterns and the memory function of sleep",
+						"authors": [
+							"Gabrielle Girardeau",
+							"Vítor Lopes-dos-Santos"
+						],
+						"year": 2021,
+						"doi": "10.1126/science.abi8370",
+						"venue": "Science",
+						"url": "https://doi.org/10.1126/science.abi8370"
+					},
+					"issues": [],
+					"structuredIssues": [],
+					"likelyHallucinated": false,
+					"verificationKind": "indexed"
+				},
+				{
+					"index": 3,
+					"rawText": "Hartmann, L., & Okafor, B. (2019). Spindle-locked replay predicts overnight vocabulary gains in bilingual adolescents. Journal of Sleep Cognition, 14(3), 201–219.",
+					"status": "unverified",
+					"confidence": null,
+					"source": null,
+					"parsed": {
+						"authors": [
+							"Hartmann, L.",
+							"Okafor, B"
+						],
+						"title": "Spindle-locked replay predicts overnight vocabulary gains in bilingual adolescents",
+						"year": 2019,
+						"venue": "Journal of Sleep Cognition"
+					},
+					"found": null,
+					"issues": [],
+					"structuredIssues": [],
+					"likelyHallucinated": false,
+					"verificationKind": "not-found"
+				}
+			],
+			"truncated": false,
+			"totalParsed": 3,
+			"gatedAt": 100
+		},
+		"tier": "anonymous",
+		"geminiWasUsed": false,
+		"quota": {
+			"tier": "anonymous",
+			"monthlyLimit": 5,
+			"monthlyRemaining": 1,
+			"dailyLimit": 3,
+			"dailyRemaining": 2
+		}
+	}
+}

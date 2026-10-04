@@ -9,6 +9,14 @@ export interface SaasContractSnapshot {
 	formattedFields: string[];
 	/** Rate-limit headers GET /api/v1/cite sends to anonymous callers. */
 	anonymousDailyHeaders: string[];
+	/** What POST /api/v1/reference-check reports and how it limits anonymous use. */
+	referenceCheck: {
+		statuses: string[];
+		verificationKinds: string[];
+		reviewIssueCodes: string[];
+		anonymousReferencesPerCheck: number;
+		anonymousChecksPerMonth: number;
+	};
 }
 
 const LIVE_SAAS_ROOT = resolve(process.cwd(), "../citeme");

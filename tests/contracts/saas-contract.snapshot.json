@@ -69,5 +69,25 @@
 		"X-RateLimit-Daily-Limit",
 		"X-RateLimit-Daily-Remaining",
 		"X-RateLimit-Daily-Reset"
-	]
+	],
+	"referenceCheck": {
+		"statuses": [
+			"partial-match",
+			"unverified",
+			"verified"
+		],
+		"verificationKinds": [
+			"grey-literature",
+			"indexed",
+			"not-found",
+			"retracted",
+			"suspicious",
+			"web-verified"
+		],
+		"reviewIssueCodes": [
+			"doi_mismatch"
+		],
+		"anonymousReferencesPerCheck": 10,
+		"anonymousChecksPerMonth": 5
+	}
 }
