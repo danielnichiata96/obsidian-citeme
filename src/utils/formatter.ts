@@ -11,17 +11,15 @@ export function insertCitation(
 	addToReferences: boolean,
 	referencesHeading: string
 ): void {
-	const cursor = editor.getCursor();
-
 	switch (format) {
 		case "bibliography":
-			editor.replaceRange(result.formatted.reference, cursor);
+			insertAtCursor(editor, result.formatted.reference);
 			break;
 		case "inText":
-			editor.replaceRange(result.formatted.inText, cursor);
+			insertAtCursor(editor, result.formatted.inText);
 			break;
 		case "both":
-			editor.replaceRange(result.formatted.inText, cursor);
+			insertAtCursor(editor, result.formatted.inText);
 			appendToReferencesSection(
 				editor,
 				result.formatted.reference,
@@ -39,6 +37,20 @@ export function insertCitation(
 			referencesHeading
 		);
 	}
+}
+
+/**
+ * Insert at the cursor and move the cursor past the inserted text. A bare
+ * replaceRange leaves the cursor in front of it, so typing would continue
+ * before the citation. Later edits elsewhere (the References section) map the
+ * cursor along with them.
+ */
+function insertAtCursor(editor: Editor, text: string): void {
+	const cursor = editor.getCursor();
+	editor.replaceRange(text, cursor);
+	editor.setCursor(
+		editor.offsetToPos(editor.posToOffset(cursor) + text.length)
+	);
 }
 
 interface EntryBlock {

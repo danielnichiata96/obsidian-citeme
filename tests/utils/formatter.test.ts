@@ -6,9 +6,14 @@ import {
 } from "../../src/utils/formatter";
 import type { CitationResult } from "../../src/utils/citation-result";
 
-/** Minimal stand-in for Obsidian's Editor over a single string buffer. */
+/**
+ * Minimal stand-in for Obsidian's Editor over a single string buffer. The
+ * cursor starts at the end and maps through edits like CodeMirror 6 does: an
+ * insertion exactly at the cursor leaves the cursor before the new text.
+ */
 function fakeEditor(initial = "") {
 	let text = initial;
+	let cursor = initial.length;
 	const offset = (pos: { line: number; ch: number }) => {
 		const lines = text.split("\n");
 		return (
@@ -16,16 +21,27 @@ function fakeEditor(initial = "") {
 			pos.ch
 		);
 	};
+	const position = (at: number) => {
+		const before = text.slice(0, at).split("\n");
+		return { line: before.length - 1, ch: before[before.length - 1].length };
+	};
 	return {
-		getCursor: () => {
-			const lines = text.split("\n");
-			return { line: lines.length - 1, ch: lines[lines.length - 1].length };
+		getCursor: () => position(cursor),
+		setCursor: (pos: { line: number; ch: number }) => {
+			cursor = offset(pos);
 		},
+		posToOffset: offset,
+		offsetToPos: position,
 		getValue: () => text,
 		lastLine: () => text.split("\n").length - 1,
 		replaceRange: (insert: string, pos: { line: number; ch: number }) => {
 			const at = offset(pos);
 			text = text.slice(0, at) + insert + text.slice(at);
+			if (at < cursor) cursor += insert.length;
+		},
+		type: (typed: string) => {
+			text = text.slice(0, cursor) + typed + text.slice(cursor);
+			cursor += typed.length;
 		},
 		text: () => text,
 	};
@@ -65,6 +81,22 @@ describe("insertCitation", () => {
 			"## References\n\nLeCun, Y. (2015). Deep learning. *Nature*."
 		);
 	});
+
+	it.each(["bibliography", "inText", "both"] as const)(
+		"leaves the cursor after the inserted citation in %s mode",
+		(format) => {
+			// Obsidian kept the cursor before the inserted text, so the next
+			// keystroke landed in front of the citation.
+			const editor = fakeEditor("Claim ");
+			insertCitation(editor as never, result, format, true, "## References");
+			editor.type(".");
+			const inserted =
+				format === "bibliography"
+					? result.formatted.reference
+					: result.formatted.inText;
+			expect(editor.text()).toContain(`Claim ${inserted}.`);
+		}
+	);
 });
 
 

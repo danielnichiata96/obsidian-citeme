@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- After inserting a citation, the cursor sits after it. It used to stay in front, so the next keystroke landed before the citation.
 - Timers use `window.setTimeout()`/`window.clearTimeout()`, so search and the DOI dialog work in popout windows.
 
 ### Changed
