@@ -1,7 +1,7 @@
 {
 	"id": "citeme",
 	"name": "CiteMe - Academic Citations",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"minAppVersion": "1.4.0",
 	"description": "Search scholarly databases, insert formatted citations in 60 styles, and check whether the references in a note exist. No account needed.",
 	"author": "CiteMe",
