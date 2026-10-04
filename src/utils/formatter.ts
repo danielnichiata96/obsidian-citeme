@@ -267,7 +267,9 @@ export function findHeadingIndex(lines: string[], heading: string): number {
 }
 
 export function findSectionEnd(lines: string[], headingIndex: number): number {
-	const headingLine = lines[headingIndex];
+	// findHeadingIndex matches trimmed lines, so an indented heading has to
+	// be trimmed here too or its section runs to the end of the note.
+	const headingLine = lines[headingIndex].trim();
 	const match = headingLine.match(/^#+/);
 	if (!match) return lines.length;
 	const headingLevel = match[0].length;

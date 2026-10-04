@@ -50,11 +50,11 @@ export class CiteMeCheckModal extends Modal {
 			cls: "citeme-check-status",
 		});
 
-		this.run().then(
-			(response) => {
+		this.run()
+			.then((response) => {
 				if (!this.closed) this.renderReport(response);
-			},
-			(error: unknown) => {
+			})
+			.catch((error: unknown) => {
 				if (this.closed) return;
 				this.renderFailure(
 					error instanceof ReferenceCheckError
@@ -65,8 +65,7 @@ export class CiteMeCheckModal extends Modal {
 									"The reference check failed. Try again.",
 							}
 				);
-			}
-		);
+			});
 	}
 
 	onClose(): void {

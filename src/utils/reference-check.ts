@@ -155,8 +155,11 @@ export function extractReferencesForCheck(
 	const headingIndex = findHeadingIndex(lines, heading.trim());
 	if (headingIndex === -1) return null;
 	const sectionEnd = findSectionEnd(lines, headingIndex);
+	// Footnote definitions often sit at the very end of a note, inside the
+	// last section; they are not references.
 	const text = lines
 		.slice(headingIndex + 1, sectionEnd)
+		.filter((line) => !/^\s*\[\^[^\]]+\]:/.test(line))
 		.join("\n")
 		.trim();
 	return text || null;
@@ -198,12 +201,33 @@ export interface CheckFailure {
 /** Turn an error response from the checker into a message a user can act on. */
 export function describeReferenceCheckFailure(
 	status: number,
-	body: string
+	body: string,
+	hasToken: boolean
 ): CheckFailure {
 	const error = parseErrorBody(body);
 	const details = isRecord(error.details) ? error.details : {};
 	const quota = isRecord(details.quota) ? details.quota : {};
 
+	// The server serves an unrecognized token the anonymous limits rather
+	// than a 401, so an anonymous limit with a token set means the token
+	// was ignored.
+	const hitAnonymousLimit =
+		(status === 403 && error.code === "QUOTA_EXCEEDED") ||
+		(status === 429 && quota.tier === "anonymous");
+	if (hasToken && hitAnonymousLimit) {
+		return {
+			action: "replace-token",
+			message:
+				"CiteMe did not recognize the token in the plugin settings, so this check ran on the free limits and reached them. Create a new token in your CiteMe settings and paste it into the plugin settings.",
+		};
+	}
+	if (status === 400 && error.code?.startsWith("VALIDATION")) {
+		return {
+			action: null,
+			message:
+				"There is nothing to check yet. Select at least one full reference, or put your references under the References heading.",
+		};
+	}
 	if (status === 403 && error.code === "QUOTA_EXCEEDED") {
 		return {
 			action: "add-token",

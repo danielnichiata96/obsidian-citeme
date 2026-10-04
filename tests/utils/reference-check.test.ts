@@ -143,6 +143,20 @@ describe("extractReferencesForCheck", () => {
 		expect(extractReferencesForCheck("Just text.", "## References")).toBeNull();
 	});
 
+	it("leaves footnote definitions at the end of the note out", () => {
+		const withFootnotes = `${note.split("## Notes")[0]}[^1]: Interview with the author, 2023.`;
+		expect(extractReferencesForCheck(withFootnotes, "## References")).not.toContain(
+			"[^1]"
+		);
+	});
+
+	it("stops at the next heading when the References heading is indented", () => {
+		const indented = note.replace("## References", "  ## References");
+		expect(extractReferencesForCheck(indented, "## References")).not.toContain(
+			"Not a reference"
+		);
+	});
+
 	it("returns null when the section is empty", () => {
 		expect(
 			extractReferencesForCheck("## References\n\n## Notes\nx", "## References")
@@ -166,7 +180,8 @@ describe("describeReferenceCheckFailure", () => {
 	it("explains the 10-reference cap and points to a token", () => {
 		const failure = describeReferenceCheckFailure(
 			403,
-			body("QUOTA_EXCEEDED", "Anonymous users are limited to 10 references per check.")
+			body("QUOTA_EXCEEDED", "Anonymous users are limited to 10 references per check."),
+			false
 		);
 		expect(failure.action).toBe("add-token");
 		expect(failure.message).toContain("10 references");
@@ -178,7 +193,8 @@ describe("describeReferenceCheckFailure", () => {
 			body("RATE_LIMIT_EXCEEDED", "Monthly reference check limit reached (5/month).", {
 				scope: "monthly",
 				quota: { tier: "anonymous" },
-			})
+			}),
+			false
 		);
 		expect(failure.action).toBe("add-token");
 		expect(failure.message).toContain("5 free checks");
@@ -190,7 +206,8 @@ describe("describeReferenceCheckFailure", () => {
 			body("RATE_LIMIT_EXCEEDED", "Monthly reference check limit reached (3/month).", {
 				scope: "monthly",
 				quota: { tier: "free" },
-			})
+			}),
+			false
 		);
 		expect(failure.action).toBe("upgrade");
 	});
@@ -198,7 +215,8 @@ describe("describeReferenceCheckFailure", () => {
 	it("reports a rejected token", () => {
 		const failure = describeReferenceCheckFailure(
 			401,
-			body("UNAUTHORIZED", "Invalid or expired token")
+			body("UNAUTHORIZED", "Invalid or expired token"),
+			true
 		);
 		expect(failure.action).toBe("replace-token");
 	});
@@ -206,11 +224,39 @@ describe("describeReferenceCheckFailure", () => {
 	it("falls back to the server's message", () => {
 		const failure = describeReferenceCheckFailure(
 			500,
-			body("INTERNAL_ERROR", "Reference checking is temporarily unavailable.")
+			body("INTERNAL_ERROR", "Reference checking is temporarily unavailable."),
+			false
 		);
 		expect(failure).toEqual({
 			action: null,
 			message: "Reference checking is temporarily unavailable.",
 		});
+	});
+
+	// The server serves an unrecognized token the anonymous limits instead of
+	// a 401, so the anonymous errors are how a bad token shows up.
+	it.each([
+		[403, body("QUOTA_EXCEEDED", "Anonymous users are limited to 10 references per check.")],
+		[
+			429,
+			body("RATE_LIMIT_EXCEEDED", "Monthly reference check limit reached (5/month).", {
+				scope: "monthly",
+				quota: { tier: "anonymous" },
+			}),
+		],
+	])("asks to replace a token the server ignored (%s)", (status, errorBody) => {
+		const failure = describeReferenceCheckFailure(status, errorBody, true);
+		expect(failure.action).toBe("replace-token");
+		expect(failure.message).toContain("did not recognize");
+	});
+
+	it("explains a selection too short to check", () => {
+		const failure = describeReferenceCheckFailure(
+			400,
+			body("VALIDATION_MIN_LENGTH", "Too small: expected string to have >=10 characters"),
+			false
+		);
+		expect(failure.message).not.toContain("Too small");
+		expect(failure.message).toContain("full reference");
 	});
 });

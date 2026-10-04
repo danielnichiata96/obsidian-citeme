@@ -173,7 +173,11 @@ export async function checkReferences(
 
 	if (response.status >= 400) {
 		throw new ReferenceCheckError(
-			describeReferenceCheckFailure(response.status, response.text)
+			describeReferenceCheckFailure(
+				response.status,
+				response.text,
+				token.trim() !== ""
+			)
 		);
 	}
 
