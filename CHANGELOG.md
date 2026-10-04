@@ -5,6 +5,16 @@ All notable changes to the CiteMe plugin for Obsidian will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Timers use `window.setTimeout()`/`window.clearTimeout()`, so search and the DOI dialog work in popout windows.
+
+### Changed
+- The "Open citeme.app" button in settings carries UTM parameters, so CiteMe can count visits that come from the plugin.
+- The build no longer depends on the `builtin-modules` package; it reads Node's own `node:module` list.
+- Releases are built, attested and published by GitHub Actions from a version tag.
+
 ## [1.0.1] - 2026-09-25
 
 ### Fixed
