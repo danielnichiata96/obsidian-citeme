@@ -2,6 +2,8 @@
 
 Search scholarly databases and insert formatted citations from CiteMe directly in Obsidian. No account needed.
 
+![Searching for a paper from the CiteMe modal in Obsidian](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/search.png)
+
 ## Features
 
 - **Instant search** - Search millions of academic papers without leaving Obsidian
@@ -50,6 +52,8 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 | **In-text** | The style's in-text citation, e.g., `(Vaswani et al., 2017)` |
 | **Both** | In-text at cursor + full citation in References section |
 
+![An in-text citation in the note and the full entries under References](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/insert-and-references.png)
+
 ### Limits
 
 The plugin needs no account. Searches share CiteMe's anonymous budget of 500 searches per 24 hours per network, and the status bar shows how many you have used. Search runs after you pause typing, so each query costs one search.
@@ -76,6 +80,8 @@ When enabled (default), the plugin automatically:
 | Sort by | Relevance | Result sorting order |
 | Add to References | On | Auto-append to References section |
 | References heading | `## References` | Heading text for the references section |
+
+![CiteMe plugin settings](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/settings.png)
 
 ## Supported Citation Styles
 

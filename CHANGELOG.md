@@ -5,7 +5,7 @@ All notable changes to the CiteMe plugin for Obsidian will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.2] - 2026-10-04
 
 ### Fixed
 - After inserting a citation, the cursor sits after it. It used to stay in front, so the next keystroke landed before the citation.
