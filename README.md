@@ -13,11 +13,9 @@ Search scholarly databases and insert formatted citations from CiteMe directly i
 - **Usage visibility** - Shows your searches in the last 24 hours in the Obsidian status bar
 - **Mobile compatible** - Works on both desktop and mobile Obsidian
 
-## Screenshots
-
-*Coming soon — screenshots will be added in a future release.*
-
 ## Installation
+
+In Obsidian, open **Settings → Community plugins → Browse**, search for "CiteMe", then select **Install** and **Enable**. The link [obsidian.md/plugins?id=citeme](https://obsidian.md/plugins?id=citeme) opens the plugin page directly in Obsidian.
 
 ### Manual Installation
 
