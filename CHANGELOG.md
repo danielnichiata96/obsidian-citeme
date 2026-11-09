@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-09
+
 ### Added
 - "Insert as new note" creates a note for the chosen paper, named after the first author, title and year, with its metadata (authors with ORCID, title, year, venue, DOI link, abstract) as note properties. The "Citation notes folder" and "Citation note tag" settings choose where it goes and how it is tagged. Contributed by @rue-a.
 
