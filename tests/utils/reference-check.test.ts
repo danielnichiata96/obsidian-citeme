@@ -89,6 +89,10 @@ describe("classifyReference", () => {
 		[{ status: "partial-match" as const }, "partial"],
 		[{ status: "unverified" as const, verificationKind: "not-found" as const, found: null }, "not-found"],
 		[{ structuredIssues: [{ code: "doi_mismatch", field: "doi", message: "DOI differs" }] }, "doi-differs"],
+		[{ structuredIssues: [{ code: "title_conflict", field: "title", message: "Cited title belongs to a different work than this DOI" }] }, "needs-review"],
+		[{ structuredIssues: [{ code: "identity_mismatch", field: "identity", message: "Second identity check disagrees" }] }, "needs-review"],
+		[{ structuredIssues: [{ code: "multiple_references", field: "identity", message: "More than one reference" }] }, "needs-review"],
+		[{ structuredIssues: [{ code: "title_conflict", field: "title", message: "t" }, { code: "doi_mismatch", field: "doi", message: "d" }] }, "doi-differs"],
 		[{ structuredIssues: [{ code: "year_mismatch", field: "year", message: "Year differs" }] }, "found"],
 	])("%j → %s", (overrides, verdict) => {
 		expect(classifyReference(reference(overrides))).toBe(verdict);

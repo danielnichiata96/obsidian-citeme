@@ -24,11 +24,19 @@ export const VERIFICATION_KINDS = [
 export type VerificationKind = (typeof VERIFICATION_KINDS)[number];
 
 /**
- * Issue codes that move a matched reference to "needs review". The web app
- * promotes only a DOI difference: year, title and venue differences fire on
- * too many correct references to be shown as problems.
+ * Issue codes that move a matched reference to "needs review", as in the web
+ * app (REVIEW_TRIGGERING_ISSUE_CODES). Each says the identifier and the
+ * citation disagree on which work is cited: the DOI differs, the DOI resolves
+ * to another title, a second identity check disagrees, or the entry holds
+ * more than one reference. Year, title and venue differences fire on too many
+ * correct references to be shown as problems.
  */
-export const REVIEW_ISSUE_CODES = ["doi_mismatch"] as const;
+export const REVIEW_ISSUE_CODES = [
+	"doi_mismatch",
+	"identity_mismatch",
+	"multiple_references",
+	"title_conflict",
+] as const;
 
 /** Anonymous limits the checker enforces per network; pinned by tests/contracts. */
 export const ANONYMOUS_REFERENCES_PER_CHECK = 10;
@@ -89,6 +97,7 @@ export interface ReferenceCheckQuota {
 export type ReferenceVerdict =
 	| "found"
 	| "doi-differs"
+	| "needs-review"
 	| "partial"
 	| "grey-literature"
 	| "retracted"
@@ -103,6 +112,7 @@ export type ReferenceVerdict =
 export const VERDICT_LABELS: Record<ReferenceVerdict, string> = {
 	found: "Found",
 	"doi-differs": "Found, but the DOI differs",
+	"needs-review": "Found, but needs review",
 	partial: "Partial match",
 	"grey-literature": "Not indexed (grey literature)",
 	retracted: "Retracted",
@@ -126,16 +136,27 @@ export function classifyReference(ref: CheckedReference): ReferenceVerdict {
 	if (ref.verificationKind === "grey-literature") return "grey-literature";
 	if (ref.status === "partial-match") return "partial";
 	if (ref.status === "unverified") return "not-found";
-	const reviewCodes: readonly string[] = REVIEW_ISSUE_CODES;
-	if (
-		ref.structuredIssues?.some(
-			(issue) =>
-				issue.code !== undefined && reviewCodes.includes(issue.code)
-		)
-	) {
-		return "doi-differs";
+	const reviewIssue = findReviewIssue(ref);
+	if (reviewIssue) {
+		return reviewIssue.code === "doi_mismatch"
+			? "doi-differs"
+			: "needs-review";
 	}
 	return "found";
+}
+
+/**
+ * The issue that sends a matched reference to review; a DOI difference wins,
+ * because the plugin can show both DOIs.
+ */
+export function findReviewIssue(
+	ref: CheckedReference
+): NonNullable<CheckedReference["structuredIssues"]>[number] | undefined {
+	const reviewCodes: readonly string[] = REVIEW_ISSUE_CODES;
+	const issues = (ref.structuredIssues ?? []).filter(
+		(issue) => issue.code !== undefined && reviewCodes.includes(issue.code)
+	);
+	return issues.find((issue) => issue.code === "doi_mismatch") ?? issues[0];
 }
 
 export function countVerdicts(references: CheckedReference[]): {

@@ -16,12 +16,14 @@ import {
 	VERDICT_LABELS,
 	classifyReference,
 	countVerdicts,
+	findReviewIssue,
 } from "../utils/reference-check";
 
 const VERDICT_GROUP: Record<ReferenceVerdict, "found" | "review" | "missing"> =
 	{
 		found: "found",
 		"doi-differs": "review",
+		"needs-review": "review",
 		partial: "review",
 		"grey-literature": "review",
 		retracted: "review",
@@ -172,12 +174,18 @@ function renderReference(parent: HTMLElement, ref: CheckedReference): void {
 	});
 
 	if (verdict === "doi-differs") {
-		const issue = ref.structuredIssues?.find(
-			(entry) => entry.code === "doi_mismatch"
-		);
+		const issue = findReviewIssue(ref);
 		if (issue?.written && issue.found) {
 			item.createDiv({
 				text: `Your DOI: ${issue.written}. Record: ${issue.found}.`,
+				cls: "citeme-check-detail",
+			});
+		}
+	} else if (verdict === "needs-review") {
+		const issue = findReviewIssue(ref);
+		if (issue?.message) {
+			item.createDiv({
+				text: issue.message,
 				cls: "citeme-check-detail",
 			});
 		}

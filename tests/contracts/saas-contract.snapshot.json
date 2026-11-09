@@ -85,7 +85,10 @@
 			"web-verified"
 		],
 		"reviewIssueCodes": [
-			"doi_mismatch"
+			"doi_mismatch",
+			"identity_mismatch",
+			"multiple_references",
+			"title_conflict"
 		],
 		"anonymousReferencesPerCheck": 10,
 		"anonymousChecksPerMonth": 5

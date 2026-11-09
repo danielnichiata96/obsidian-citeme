@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When a check with a free CiteMe account stops at 50 references, or the account has used its monthly checks, the result offers the Thesis Pass (30 days of Pro, one payment, no subscription) and opens its card on the pricing page.
 - The plugin's funding link carries UTM parameters, so CiteMe can tell visits from Obsidian apart.
 
+### Fixed
+- A reference check sends a found reference to review on the same signals as the CiteMe web app: besides a different DOI, when the DOI resolves to another title, when a second identity check disagrees, or when one entry holds more than one reference. These show as "Found, but needs review" with the reason; before, the plugin listed them as found.
+
 ## [1.1.1] - 2026-10-04
 
 ### Fixed
