@@ -5,13 +5,18 @@ import {
 	INSERT_FORMATS,
 	CITEME_SETTINGS_LINK,
 	CITEME_TOKEN_LINK,
+	DEFAULT_SETTINGS,
 } from "./utils/constants";
 import {
 	ANONYMOUS_CHECKS_PER_MONTH,
 	ANONYMOUS_REFERENCES_PER_CHECK,
 } from "./utils/reference-check";
 import { getCitationStyleOptions } from "./utils/access";
-import type { CiteMeSettings } from "./utils/settings-migration";
+import {
+	sanitizeFolderPath,
+	sanitizeTag,
+	type CiteMeSettings,
+} from "./utils/settings-migration";
 
 export type { CiteMeSettings } from "./utils/settings-migration";
 
@@ -150,18 +155,16 @@ export class CiteMeSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Citation notes folder")
-			.setDesc("Folder used by Insert as new note (supports nested paths)")
+			.setDesc(
+				"Folder used by Insert as new note (supports nested paths)"
+			)
 			.addText((text) => {
 				text.setPlaceholder("CiteMe")
 					.setValue(this.plugin.settings.citationNotesFolder)
 					.onChange(async (value) => {
-						this.plugin.settings.citationNotesFolder = value
-							.trim()
-							.replace(/^\/+|\/+$/g, "")
-							.replace(/\/+/g, "/");
-						if (!this.plugin.settings.citationNotesFolder) {
-							this.plugin.settings.citationNotesFolder = "CiteMe";
-						}
+						this.plugin.settings.citationNotesFolder =
+							sanitizeFolderPath(value) ||
+							DEFAULT_SETTINGS.citationNotesFolder;
 						await this.plugin.saveSettings();
 					});
 			});
@@ -173,7 +176,9 @@ export class CiteMeSettingTab extends PluginSettingTab {
 				text.setPlaceholder("CiteMe")
 					.setValue(this.plugin.settings.citationNoteTag)
 					.onChange(async (value) => {
-						this.plugin.settings.citationNoteTag = value.trim() || "CiteMe";
+						this.plugin.settings.citationNoteTag =
+							sanitizeTag(value) ||
+							DEFAULT_SETTINGS.citationNoteTag;
 						await this.plugin.saveSettings();
 					});
 			});

@@ -38,6 +38,13 @@ describe("normalizeSettings", () => {
 		expect(settings.citationNoteTag).toBe("literature/citeme");
 	});
 
+	it("drops a leading # and spaces from the citation note tag", () => {
+		const settings = normalizeSettings({
+			citationNoteTag: " #literature notes ",
+		});
+		expect(settings.citationNoteTag).toBe("literature-notes");
+	});
+
 	it("falls back when citation note folder or tag are blank", () => {
 		const settings = normalizeSettings({
 			citationNotesFolder: "   ",

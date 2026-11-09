@@ -50,7 +50,7 @@ export function normalizeSettings(saved: unknown): CiteMeSettings {
 	return settings;
 }
 
-function sanitizeFolderPath(value: unknown): string {
+export function sanitizeFolderPath(value: unknown): string {
 	if (typeof value !== "string") return "";
 	return value
 		.trim()
@@ -58,7 +58,8 @@ function sanitizeFolderPath(value: unknown): string {
 		.replace(/\/+/g, "/");
 }
 
-function sanitizeTag(value: unknown): string {
+/** Obsidian tags take no leading "#" and no spaces. */
+export function sanitizeTag(value: unknown): string {
 	if (typeof value !== "string") return "";
-	return value.trim();
+	return value.trim().replace(/^#+/, "").replace(/\s+/g, "-");
 }

@@ -55,6 +55,10 @@ Copy `main.js`, `manifest.json`, and `styles.css` to your vault at `.obsidian/pl
 
 ![An in-text citation in the note and the full entries under References](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/insert-and-references.png)
 
+### Insert as New Note
+
+Run "Insert as new note" from the command palette, search, and pick a paper. The plugin creates a note named after the first author, the title and the year, with the paper's metadata (authors, title, year, venue, DOI link, abstract) as note properties. Notes go to the "Citation notes folder" and carry the "Citation note tag".
+
 ### Check References
 
 Run "Check references in this note" from the command palette. The plugin sends the selected text, or the entries under your References heading when nothing is selected, to CiteMe's reference checker. You can also select references, right-click, and choose "Check selected references".
@@ -100,6 +104,8 @@ When enabled (default), the plugin automatically:
 | Add to References | On | Auto-append to References section |
 | CiteMe token | Empty | Optional. Reference checks use your CiteMe plan instead of the anonymous limits |
 | References heading | `## References` | Heading text for the references section |
+| Citation notes folder | `CiteMe` | Folder for notes created by "Insert as new note" (nested paths work) |
+| Citation note tag | `CiteMe` | Tag written to the properties of those notes |
 
 ![CiteMe plugin settings](https://raw.githubusercontent.com/danielnichiata96/obsidian-citeme/main/docs/screenshots/settings.png)
 

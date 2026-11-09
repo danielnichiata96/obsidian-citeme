@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
+import { Editor, MarkdownView, Notice, Plugin, normalizePath } from "obsidian";
 import { CitationResult, CiteMeApiError, checkReferences } from "./src/api";
 import { CiteMeCheckModal } from "./src/modals/check-modal";
 import { CiteMeSearchModal } from "./src/modals/search-modal";
@@ -217,26 +217,32 @@ export default class CiteMePlugin extends Plugin {
 	}
 
 	private async createCitationNote(result: CitationResult): Promise<void> {
-		await this.ensureCitationNotesFolder();
-		const noteBaseName = suggestCitationNoteBaseName(result.paper);
-		const notePath = this.nextAvailableNotePath(noteBaseName);
-		const content = buildCitationNoteMarkdown(
-			result,
-			this.settings.citationNoteTag
-		);
+		try {
+			await this.ensureCitationNotesFolder();
+			const noteBaseName = suggestCitationNoteBaseName(result.paper);
+			const notePath = this.nextAvailableNotePath(noteBaseName);
+			const content = buildCitationNoteMarkdown(
+				result,
+				this.settings.citationNoteTag
+			);
 
-		const file = await this.app.vault.create(notePath, content);
-		await this.app.workspace.getLeaf(true).openFile(file);
-		new Notice(`Created note: ${file.path}`);
+			const file = await this.app.vault.create(notePath, content);
+			await this.app.workspace.getLeaf(true).openFile(file);
+			new Notice(`Created note: ${file.path}`);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			new Notice(`CiteMe: Could not create the note - ${message}`);
+		}
 	}
 
 	private nextAvailableNotePath(baseName: string): string {
-		const prefix = `${this.settings.citationNotesFolder}/`;
-		let candidate = `${prefix}${baseName}.md`;
+		const prefix = `${normalizePath(this.settings.citationNotesFolder)}/`;
+		let candidate = normalizePath(`${prefix}${baseName}.md`);
 		let suffix = 2;
 
 		while (this.app.vault.getAbstractFileByPath(candidate)) {
-			candidate = `${prefix}${baseName} (${suffix}).md`;
+			candidate = normalizePath(`${prefix}${baseName} (${suffix}).md`);
 			suffix++;
 		}
 
@@ -244,7 +250,7 @@ export default class CiteMePlugin extends Plugin {
 	}
 
 	private async ensureCitationNotesFolder(): Promise<void> {
-		const folder = this.settings.citationNotesFolder;
+		const folder = normalizePath(this.settings.citationNotesFolder);
 		if (this.app.vault.getAbstractFileByPath(folder)) {
 			return;
 		}
