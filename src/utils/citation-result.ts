@@ -13,11 +13,17 @@ export interface Paper {
 	title: string;
 	/** Author display names. */
 	authors: string[];
+	authorMetadata?: AuthorMetadata[];
 	year: number | null;
 	doi: string | null;
 	venue: string | null;
 	citationCount: number;
 	abstract: string | null;
+}
+
+export interface AuthorMetadata {
+	name: string;
+	orcid: string | null;
 }
 
 /** Both values are Markdown, ready to insert into a note. */
@@ -44,6 +50,7 @@ export function normalizeCitationResult(raw: unknown): CitationResult {
 			id: asString(paper.id) ?? "",
 			title: asString(paper.title) ?? "",
 			authors: authorNames(paper.authors),
+			authorMetadata: authorMetadata(paper.authors),
 			year: typeof paper.year === "number" ? paper.year : null,
 			doi: asString(paper.doi),
 			venue: asString(paper.venue),
@@ -76,6 +83,29 @@ function authorNames(value: unknown): string[] {
 		if (name) names.push(name);
 	}
 	return names;
+}
+
+function authorMetadata(value: unknown): AuthorMetadata[] {
+	if (!Array.isArray(value)) return [];
+	const metadata: AuthorMetadata[] = [];
+	for (const author of value) {
+		if (typeof author === "string") {
+			const name = asString(author);
+			if (name) {
+				metadata.push({ name, orcid: null });
+			}
+			continue;
+		}
+
+		const record = asRecord(author);
+		const name = asString(record.name);
+		if (!name) continue;
+		metadata.push({
+			name,
+			orcid: asString(record.orcid),
+		});
+	}
+	return metadata;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

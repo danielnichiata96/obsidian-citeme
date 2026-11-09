@@ -73,6 +73,11 @@ describe("CiteMe API contract", () => {
 			"Yoshua Bengio",
 			"Geoffrey E. Hinton",
 		]);
+		expect(result.paper.authorMetadata).toEqual([
+			{ name: "Yann LeCun", orcid: "0000-0002-1992-2684" },
+			{ name: "Yoshua Bengio", orcid: null },
+			{ name: "Geoffrey E. Hinton", orcid: null },
+		]);
 	});
 
 	it("tolerates missing optional paper fields", () => {

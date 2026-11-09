@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Notice, Plugin } from "obsidian";
+import { Editor, MarkdownView, Notice, Plugin, normalizePath } from "obsidian";
 import { CitationResult, CiteMeApiError, checkReferences } from "./src/api";
 import { CiteMeCheckModal } from "./src/modals/check-modal";
 import { CiteMeSearchModal } from "./src/modals/search-modal";
@@ -12,6 +12,10 @@ import {
 	type QuotaInfo,
 } from "./src/utils/access";
 import { insertCitation, InsertFormat } from "./src/utils/formatter";
+import {
+	buildCitationNoteMarkdown,
+	suggestCitationNoteBaseName,
+} from "./src/utils/note-template";
 import { extractReferencesForCheck } from "./src/utils/reference-check";
 import {
 	type CiteMeSettings,
@@ -42,6 +46,14 @@ export default class CiteMePlugin extends Plugin {
 			name: "Insert citation (in-text)",
 			editorCallback: (editor: Editor) => {
 				this.openSearchModal(editor, undefined, "inText");
+			},
+		});
+
+		this.addCommand({
+			id: "insert-as-new-note",
+			name: "Insert as new note",
+			callback: () => {
+				this.openSearchModalForNewNote();
 			},
 		});
 
@@ -137,6 +149,19 @@ export default class CiteMePlugin extends Plugin {
 		modal.open();
 	}
 
+	private openSearchModalForNewNote(initialQuery?: string): void {
+		new CiteMeSearchModal(
+			this.app,
+			this.settings,
+			(result: CitationResult) => {
+				void this.createCitationNote(result);
+			},
+			(quota) => this.updateQuotaInfo(quota),
+			(error) => this.handleApiError(error),
+			initialQuery
+		).open();
+	}
+
 	/** Check the selection, or the References section when nothing is selected. */
 	private checkReferences(editor: Editor): void {
 		const heading = this.settings.referencesHeading;
@@ -189,6 +214,55 @@ export default class CiteMePlugin extends Plugin {
 			this.settings.referencesHeading
 		);
 		new Notice(`Inserted: ${result.paper.title}`);
+	}
+
+	private async createCitationNote(result: CitationResult): Promise<void> {
+		try {
+			await this.ensureCitationNotesFolder();
+			const noteBaseName = suggestCitationNoteBaseName(result.paper);
+			const notePath = this.nextAvailableNotePath(noteBaseName);
+			const content = buildCitationNoteMarkdown(
+				result,
+				this.settings.citationNoteTag
+			);
+
+			const file = await this.app.vault.create(notePath, content);
+			await this.app.workspace.getLeaf(true).openFile(file);
+			new Notice(`Created note: ${file.path}`);
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			new Notice(`CiteMe: Could not create the note - ${message}`);
+		}
+	}
+
+	private nextAvailableNotePath(baseName: string): string {
+		const prefix = `${normalizePath(this.settings.citationNotesFolder)}/`;
+		let candidate = normalizePath(`${prefix}${baseName}.md`);
+		let suffix = 2;
+
+		while (this.app.vault.getAbstractFileByPath(candidate)) {
+			candidate = normalizePath(`${prefix}${baseName} (${suffix}).md`);
+			suffix++;
+		}
+
+		return candidate;
+	}
+
+	private async ensureCitationNotesFolder(): Promise<void> {
+		const folder = normalizePath(this.settings.citationNotesFolder);
+		if (this.app.vault.getAbstractFileByPath(folder)) {
+			return;
+		}
+
+		const parts = folder.split("/").filter(Boolean);
+		let current = "";
+		for (const part of parts) {
+			current = current ? `${current}/${part}` : part;
+			if (!this.app.vault.getAbstractFileByPath(current)) {
+				await this.app.vault.createFolder(current);
+			}
+		}
 	}
 
 	async loadSettings(): Promise<void> {

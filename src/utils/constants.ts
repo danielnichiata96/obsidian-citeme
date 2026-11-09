@@ -96,6 +96,8 @@ export const DEFAULT_SETTINGS = {
 	insertFormat: "bibliography" as const,
 	addToReferencesSection: true,
 	referencesHeading: "## References",
+	citationNotesFolder: "CiteMe",
+	citationNoteTag: "CiteMe",
 	sortBy: "relevance" as const,
 	apiBaseUrl: "https://citeme.app",
 	apiToken: "",

@@ -28,4 +28,31 @@ describe("normalizeSettings", () => {
 			DEFAULT_SETTINGS.defaultStyle
 		);
 	});
+
+	it("sanitizes citation note folder and tag", () => {
+		const settings = normalizeSettings({
+			citationNotesFolder: " /Research//CiteMe/ ",
+			citationNoteTag: "  literature/citeme  ",
+		});
+		expect(settings.citationNotesFolder).toBe("Research/CiteMe");
+		expect(settings.citationNoteTag).toBe("literature/citeme");
+	});
+
+	it("drops a leading # and spaces from the citation note tag", () => {
+		const settings = normalizeSettings({
+			citationNoteTag: " #literature notes ",
+		});
+		expect(settings.citationNoteTag).toBe("literature-notes");
+	});
+
+	it("falls back when citation note folder or tag are blank", () => {
+		const settings = normalizeSettings({
+			citationNotesFolder: "   ",
+			citationNoteTag: "   ",
+		});
+		expect(settings.citationNotesFolder).toBe(
+			DEFAULT_SETTINGS.citationNotesFolder
+		);
+		expect(settings.citationNoteTag).toBe(DEFAULT_SETTINGS.citationNoteTag);
+	});
 });

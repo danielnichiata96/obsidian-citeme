@@ -8,6 +8,8 @@ export interface CiteMeSettings {
 	insertFormat: InsertFormat;
 	addToReferencesSection: boolean;
 	referencesHeading: string;
+	citationNotesFolder: string;
+	citationNoteTag: string;
 	sortBy: "relevance" | "year" | "citations";
 	apiBaseUrl: string;
 	/** Optional CiteMe API token; only the reference check sends it. */
@@ -38,5 +40,26 @@ export function normalizeSettings(saved: unknown): CiteMeSettings {
 		settings.defaultStyle = DEFAULT_SETTINGS.defaultStyle;
 	}
 
+	settings.citationNotesFolder =
+		sanitizeFolderPath(settings.citationNotesFolder) ||
+		DEFAULT_SETTINGS.citationNotesFolder;
+	settings.citationNoteTag =
+		sanitizeTag(settings.citationNoteTag) ||
+		DEFAULT_SETTINGS.citationNoteTag;
+
 	return settings;
+}
+
+export function sanitizeFolderPath(value: unknown): string {
+	if (typeof value !== "string") return "";
+	return value
+		.trim()
+		.replace(/^\/+|\/+$/g, "")
+		.replace(/\/+/g, "/");
+}
+
+/** Obsidian tags take no leading "#" and no spaces. */
+export function sanitizeTag(value: unknown): string {
+	if (typeof value !== "string") return "";
+	return value.trim().replace(/^#+/, "").replace(/\s+/g, "-");
 }

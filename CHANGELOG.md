@@ -5,6 +5,11 @@ All notable changes to the CiteMe plugin for Obsidian will be documented in this
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- "Insert as new note" creates a note for the chosen paper, named after the first author, title and year, with its metadata (authors with ORCID, title, year, venue, DOI link, abstract) as note properties. The "Citation notes folder" and "Citation note tag" settings choose where it goes and how it is tagged. Contributed by @rue-a.
+
 ## [1.1.1] - 2026-10-04
 
 ### Fixed
