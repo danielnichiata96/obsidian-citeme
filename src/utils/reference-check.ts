@@ -34,6 +34,14 @@ export const REVIEW_ISSUE_CODES = ["doi_mismatch"] as const;
 export const ANONYMOUS_REFERENCES_PER_CHECK = 10;
 export const ANONYMOUS_CHECKS_PER_MONTH = 5;
 
+/**
+ * Said wherever a free account's check hits a wall. No price: it changes
+ * with the region and over time, and the pricing page shows the current one.
+ */
+export const PRO_OFFER =
+	"CiteMe Pro checks longer lists with no monthly limit, and the Thesis Pass gives 30 days of Pro for one payment, with no subscription.";
+export const PASS_BUTTON_LABEL = "Get 30 days of Pro";
+
 export interface CheckedReference {
 	index: number;
 	rawText: string;
@@ -265,8 +273,7 @@ export function describeReferenceCheckFailure(
 		if (quota.tier === "free") {
 			return {
 				action: "upgrade",
-				message:
-					"Your CiteMe plan has used this month's checks. CiteMe Pro checks without a monthly limit.",
+				message: `Your CiteMe plan has used this month's checks. ${PRO_OFFER}`,
 			};
 		}
 	}

@@ -123,4 +123,15 @@ export const CITEME_TOKEN_LINK = `${CITEME_APP_URL}/settings?utm_source=obsidian
 
 export const CITEME_CHECKER_LINK = `${CITEME_APP_URL}/tools/reference-checker?utm_source=obsidian&utm_medium=plugin&utm_campaign=check_references`;
 
-export const CITEME_PRICING_LINK = `${CITEME_APP_URL}/pricing?utm_source=obsidian&utm_medium=plugin&utm_campaign=check_references`;
+/**
+ * The Thesis Pass (30 days of Pro, one payment, no subscription) is the
+ * offer at CiteMe's paid walls; the fragment lands on its card on the pricing
+ * page. One campaign per wall, so a purchase can be traced to the wall.
+ */
+const CITEME_PASS_URL = `${CITEME_APP_URL}/pricing?utm_source=obsidian&utm_medium=plugin`;
+
+/** A free account has used its monthly checks. */
+export const CITEME_PASS_LINK_MONTHLY_LIMIT = `${CITEME_PASS_URL}&utm_campaign=check_monthly_limit#thesis-pass`;
+
+/** A free account's check stopped at the free per-check cap. */
+export const CITEME_PASS_LINK_TRUNCATED = `${CITEME_PASS_URL}&utm_campaign=check_truncated#thesis-pass`;

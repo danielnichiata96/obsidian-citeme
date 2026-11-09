@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - "Insert as new note" creates a note for the chosen paper, named after the first author, title and year, with its metadata (authors with ORCID, title, year, venue, DOI link, abstract) as note properties. The "Citation notes folder" and "Citation note tag" settings choose where it goes and how it is tagged. Contributed by @rue-a.
 
+### Changed
+- When a check with a free CiteMe account stops at 50 references, or the account has used its monthly checks, the result offers the Thesis Pass (30 days of Pro, one payment, no subscription) and opens its card on the pricing page.
+- The plugin's funding link carries UTM parameters, so CiteMe can tell visits from Obsidian apart.
+
 ## [1.1.1] - 2026-10-04
 
 ### Fixed

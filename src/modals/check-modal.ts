@@ -2,7 +2,8 @@ import { App, Modal } from "obsidian";
 import { type CheckResponse, ReferenceCheckError } from "../api";
 import {
 	CITEME_CHECKER_LINK,
-	CITEME_PRICING_LINK,
+	CITEME_PASS_LINK_MONTHLY_LIMIT,
+	CITEME_PASS_LINK_TRUNCATED,
 	CITEME_TOKEN_LINK,
 } from "../utils/constants";
 import {
@@ -10,6 +11,8 @@ import {
 	type CheckedReference,
 	type ReferenceCheckQuota,
 	type ReferenceVerdict,
+	PASS_BUTTON_LABEL,
+	PRO_OFFER,
 	VERDICT_LABELS,
 	classifyReference,
 	countVerdicts,
@@ -83,9 +86,14 @@ export class CiteMeCheckModal extends Modal {
 			cls: "citeme-check-summary",
 		});
 
+		// The free per-check cap is CiteMe's main paid wall: offer the
+		// Thesis Pass right there. Pro lists are cut only by the safety cap.
+		const truncatedOnFreePlan = report.truncated && quota?.tier === "free";
 		if (report.truncated) {
 			contentEl.createEl("p", {
-				text: `Only the first ${report.references.length} of ${report.totalParsed} references were checked.`,
+				text: truncatedOnFreePlan
+					? `Only the first ${report.references.length} of ${report.totalParsed} references were checked. ${PRO_OFFER}`
+					: `Only the first ${report.references.length} of ${report.totalParsed} references were checked.`,
 				cls: "citeme-check-note",
 			});
 		}
@@ -115,6 +123,13 @@ export class CiteMeCheckModal extends Modal {
 		}
 
 		const buttons = contentEl.createDiv({ cls: "citeme-detail-buttons" });
+		if (truncatedOnFreePlan) {
+			addLinkButton(
+				buttons,
+				PASS_BUTTON_LABEL,
+				CITEME_PASS_LINK_TRUNCATED
+			);
+		}
 		addLinkButton(
 			buttons,
 			"Open the CiteMe reference checker",
@@ -134,7 +149,11 @@ export class CiteMeCheckModal extends Modal {
 		) {
 			addLinkButton(buttons, "Create a CiteMe token", CITEME_TOKEN_LINK);
 		} else if (failure.action === "upgrade") {
-			addLinkButton(buttons, "See CiteMe Pro", CITEME_PRICING_LINK);
+			addLinkButton(
+				buttons,
+				PASS_BUTTON_LABEL,
+				CITEME_PASS_LINK_MONTHLY_LIMIT
+			);
 		}
 	}
 }

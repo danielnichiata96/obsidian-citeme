@@ -239,6 +239,8 @@ describe("describeReferenceCheckFailure", () => {
 			false
 		);
 		expect(failure.action).toBe("upgrade");
+		expect(failure.message).toContain("Thesis Pass");
+		expect(failure.message).not.toMatch(/\$|US\$|R\$/);
 	});
 
 	it("reports a rejected token", () => {

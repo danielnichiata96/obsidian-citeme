@@ -6,6 +6,6 @@
 	"description": "Search scholarly databases, insert formatted citations in 60 styles, and check whether the references in a note exist. No account needed.",
 	"author": "CiteMe",
 	"authorUrl": "https://citeme.app",
-	"fundingUrl": "https://citeme.app/pricing",
+	"fundingUrl": "https://citeme.app/pricing?utm_source=obsidian&utm_medium=plugin&utm_campaign=funding",
 	"isDesktopOnly": false
 }

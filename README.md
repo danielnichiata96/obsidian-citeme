@@ -79,7 +79,7 @@ A match does not confirm the year, journal, or pages.
 
 The plugin needs no account. Searches share CiteMe's anonymous budget of 500 searches per 24 hours per network, and the status bar shows how many you have used. Search runs after you pause typing, so each query costs one search.
 
-Without an account, a reference check covers up to 10 references and each network gets 5 checks a month. To check longer lists, create a token in your CiteMe settings and paste it into the plugin's "CiteMe token" setting: checks then use your CiteMe plan, and CiteMe Pro has no monthly limit.
+Without an account, a reference check covers up to 10 references and each network gets 5 checks a month. To check longer lists, create a token in your CiteMe settings and paste it into the plugin's "CiteMe token" setting: checks then use your CiteMe plan. A free account checks up to 50 references at a time, 3 checks a month. Longer lists and more checks need payment: CiteMe Pro (subscription) has no monthly limit, and the Thesis Pass gives 30 days of Pro for one payment, with no subscription. Prices are on https://citeme.app/pricing.
 
 ### DOI Lookup
 
